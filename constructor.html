@@ -472,18 +472,19 @@
 
             // Функция отправки заказа в бота
             function sendOrderToBot() {
-                // Собираем состав
+                alert('1️⃣ sendOrderToBot вызвана');
+                
                 const composition = {
                     team: team,
                     customer: customerData,
                     players: []
                 };
-
+            
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     if (!positionDiv || !labelDiv) return;
-
+            
                     const playerName = fieldPositions.get(positionDiv);
                     if (playerName) {
                         composition.players.push({
@@ -492,16 +493,16 @@
                         });
                     }
                 });
-
+            
                 const jsonData = JSON.stringify(composition);
-
-                // Отправляем через Telegram WebApp
+                alert('2️⃣ Данные собраны: ' + jsonData);
+                
                 if (window.Telegram && Telegram.WebApp) {
+                    alert('3️⃣ Telegram.WebApp доступен, отправка...');
                     Telegram.WebApp.sendData(jsonData);
-                    console.log('Данные отправлены:', jsonData);
+                    alert('4️⃣ Данные отправлены!');
                 } else {
-                    console.log('Вне Telegram: данные не отправлены', jsonData);
-                    alert('Тестовый режим: данные не отправлены. Смотри консоль.');
+                    alert('3️⃣ ОШИБКА: Telegram.WebApp не доступен');
                 }
             }
 
