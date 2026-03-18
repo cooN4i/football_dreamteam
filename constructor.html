@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Конструктор состава</title>
+    <!-- Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Отключаем кеширование -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <style>
         * {
             box-sizing: border-box;
@@ -52,15 +57,15 @@
         .line {
             display: flex;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .position {
-            width: 50px;
-            height: 70px;
+            width: 70px;
+            height: 100px;
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.6);
-            border-radius: 6px;
+            border-radius: 8px;
             position: relative;
             overflow: hidden;
             transition: background 0.2s, border-color 0.2s;
@@ -85,18 +90,34 @@
         }
         .position .player-name {
             position: absolute;
-            bottom: 2px;
+            bottom: 4px;
             left: 0;
             right: 0;
             background: rgba(255,255,255,0.7);
-            padding: 2px 2px;
-            border-radius: 3px;
+            padding: 3px 3px;
+            border-radius: 4px;
             z-index: 2;
             font-weight: bold;
-            font-size: 8px;
+            font-size: 10px;
             text-align: center;
             pointer-events: none;
             line-height: 1.2;
+        }
+        .position .position-label {
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .position.filled .position-label {
+            display: none;
         }
 
         /* Панель выбора игроков */
@@ -142,9 +163,9 @@
             justify-content: center;
         }
         .player-option {
-            width: 50px;
-            height: 70px;
-            border-radius: 6px;
+            width: 70px;
+            height: 100px;
+            border-radius: 8px;
             border: 1px solid #ccc;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
@@ -167,15 +188,15 @@
         }
         .player-option .player-name {
             position: absolute;
-            bottom: 2px;
+            bottom: 4px;
             left: 0;
             right: 0;
             background: rgba(255,255,255,0.7);
-            padding: 2px 2px;
-            border-radius: 3px;
+            padding: 3px 3px;
+            border-radius: 4px;
             z-index: 2;
             font-weight: bold;
-            font-size: 8px;
+            font-size: 10px;
             text-align: center;
             line-height: 1.2;
         }
@@ -227,27 +248,31 @@
     <a href="index.html" class="back-button">← Назад к командам</a>
     <h2 id="team-title">Загрузка...</h2>
 
-    <!-- Поле с позициями -->
+    <!-- Поле с позициями (70x100, подписи) -->
     <div class="field" id="field">
         <div class="positions-grid" id="positionsGrid">
+            <!-- Нападение -->
             <div class="line">
-                <div class="position" data-position="FWD" data-line="0" data-index="0"></div>
-                <div class="position" data-position="FWD" data-line="0" data-index="1"></div>
-                <div class="position" data-position="FWD" data-line="0" data-index="2"></div>
+                <div class="position" data-position="FWD" data-label="LW"><span class="position-label">LW</span></div>
+                <div class="position" data-position="FWD" data-label="ST"><span class="position-label">ST</span></div>
+                <div class="position" data-position="FWD" data-label="RW"><span class="position-label">RW</span></div>
             </div>
+            <!-- Полузащита -->
             <div class="line">
-                <div class="position" data-position="MID" data-line="1" data-index="0"></div>
-                <div class="position" data-position="MID" data-line="1" data-index="1"></div>
-                <div class="position" data-position="MID" data-line="1" data-index="2"></div>
+                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
+                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
+                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
             </div>
+            <!-- Защита -->
             <div class="line">
-                <div class="position" data-position="DEF" data-line="2" data-index="0"></div>
-                <div class="position" data-position="DEF" data-line="2" data-index="1"></div>
-                <div class="position" data-position="DEF" data-line="2" data-index="2"></div>
-                <div class="position" data-position="DEF" data-line="2" data-index="3"></div>
+                <div class="position" data-position="DEF" data-label="LB"><span class="position-label">LB</span></div>
+                <div class="position" data-position="DEF" data-label="CB"><span class="position-label">CB</span></div>
+                <div class="position" data-position="DEF" data-label="CB"><span class="position-label">CB</span></div>
+                <div class="position" data-position="DEF" data-label="RB"><span class="position-label">RB</span></div>
             </div>
+            <!-- Вратарь -->
             <div class="line">
-                <div class="position" data-position="GK" data-line="3" data-index="0"></div>
+                <div class="position" data-position="GK" data-label="GK"><span class="position-label">GK</span></div>
             </div>
         </div>
     </div>
@@ -271,7 +296,7 @@
 
             const jsonFileName = team.toLowerCase() + '.json';
             let playersData = [];
-            const fieldPositions = new Map();
+            const fieldPositions = new Map(); // key: DOM position, value: player name
 
             const positions = document.querySelectorAll('.position');
             const selectorPanel = document.getElementById('selectorPanel');
@@ -308,7 +333,7 @@
             }
 
             function openSelector(positionElement) {
-                const positionType = positionElement.dataset.position;
+                const positionType = positionElement.dataset.position; // GK, DEF, MID, FWD
                 const currentPlayer = fieldPositions.get(positionElement);
 
                 const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
@@ -420,7 +445,13 @@
                 const variant = player.variants[0];
                 let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
 
-                positionElement.innerHTML = '';
+                // Очищаем содержимое, но оставляем лейбл (он скроется через CSS при filled)
+                // Полностью очистим, затем добавим img и span, лейбл уже есть в HTML
+                // Удалим только динамически добавленные элементы (img и .player-name)
+                const oldImg = positionElement.querySelector('img');
+                if (oldImg) oldImg.remove();
+                const oldName = positionElement.querySelector('.player-name');
+                if (oldName) oldName.remove();
 
                 const img = document.createElement('img');
                 img.src = imagePath;
@@ -449,7 +480,11 @@
 
             function clearField() {
                 positions.forEach(pos => {
-                    pos.innerHTML = '';
+                    // Удаляем img и .player-name
+                    const img = pos.querySelector('img');
+                    if (img) img.remove();
+                    const nameSpan = pos.querySelector('.player-name');
+                    if (nameSpan) nameSpan.remove();
                     pos.classList.remove('filled');
                     fieldPositions.delete(pos);
                 });
