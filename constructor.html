@@ -6,9 +6,14 @@
     <title>Конструктор состава</title>
     <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Виджет СДЭК (подключаем CSS и JS) -->
-    <link href="https://widget.cdek.ru/widget/css/widget.css" rel="stylesheet">
-    <script src="https://widget.cdek.ru/widget/js/widget.js"></script>
+    <!-- jQuery (необходим для DaData) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- intl-tel-input для валидации телефона -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+    <!-- DaData Suggestions -->
+    <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
     <!-- Отключаем кеширование -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -61,7 +66,7 @@
         .line {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         .position-wrapper {
@@ -80,10 +85,6 @@
             overflow: hidden;
             transition: background 0.2s, border-color 0.2s;
             cursor: pointer;
-        }
-        .position.highlight {
-            background: rgba(255, 215, 0, 0.6);
-            border-color: gold;
         }
         .position.filled {
             border-color: white;
@@ -233,6 +234,18 @@
             border-radius: 8px;
             font-size: 16px;
         }
+        .iti {
+            width: 100%;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 4px;
+            display: none;
+        }
+        .error-message.visible {
+            display: block;
+        }
         .button-group {
             display: flex;
             justify-content: center;
@@ -271,26 +284,21 @@
         .secondary-button:hover {
             background: #5a6268;
         }
-
-        /* Контейнер для карты ПВЗ */
-        #pvzContainer {
-            width: 100%;
-            height: 500px;
-            margin: 20px 0;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .error-message {
-            color: red;
-            text-align: center;
-            padding: 20px;
-        }
-        /* Скрытие/показ экранов */
         .screen {
             display: none;
         }
         .screen.active {
             display: block;
+        }
+        /* Финальное сообщение */
+        .success-message {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 20px auto;
         }
     </style>
 </head>
@@ -384,47 +392,54 @@
                 <div class="form-group">
                     <label for="phone">Номер телефона</label>
                     <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
+                    <div id="phoneError" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Адрес получения (ПВЗ или курьером)</label>
+                    <input type="text" id="address" placeholder="Начните вводить адрес..." autocomplete="off">
+                    <div id="addressError" class="error-message">Пожалуйста, выберите адрес из списка</div>
                 </div>
                 <div class="button-group">
                     <button class="action-button secondary-button" id="backFromForm">Назад</button>
-                    <button class="action-button order-button" id="nextToPVZ">Далее</button>
+                    <button class="action-button order-button" id="nextToConfirm">Далее</button>
                 </div>
             </div>
         </div>
 
-        <!-- Шаг 3: Выбор ПВЗ СДЭК -->
-        <div id="pvzScreen" class="screen">
+        <!-- Шаг 3: Финальное подтверждение (вместо карты) -->
+        <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
-            <h2>Выберите пункт выдачи СДЭК</h2>
-            <div id="pvzContainer"></div>
-            <p>Выберите ПВЗ на карте — это финальный шаг</p>
+            <div class="success-message">
+                <h2>Заказ сформирован!</h2>
+                <p>Спасибо, ваш заказ принят. Мы свяжемся с вами в ближайшее время.</p>
+                <button class="action-button order-button" id="finishButton">Готово</button>
+            </div>
         </div>
     </div>
 
     <script>
         (function() {
-            // Состояние приложения
-            let currentScreen = 'constructor'; // constructor, form, pvz
-            let team = '';
+            const urlParams = new URLSearchParams(window.location.search);
+            let team = urlParams.get('team') || 'Барселона';
+            document.getElementById('team-title').textContent = `Состав ${team}`;
+
+            const jsonFileName = team.toLowerCase() + '.json';
             let playersData = [];
-            const fieldPositions = new Map(); // key: DOM position, value: player name
+            const fieldPositions = new Map();
             
-            // Данные формы
             let customerData = {
                 fullName: '',
-                phone: ''
+                phone: '',
+                address: ''
             };
             
-            // Выбранный ПВЗ
-            let selectedPVZ = null;
+            let iti = null;
+            let selectedAddress = ''; // для хранения выбранного адреса из DaData
 
-            // DOM элементы
             const constructorScreen = document.getElementById('constructorScreen');
             const formScreen = document.getElementById('formScreen');
-            const pvzScreen = document.getElementById('pvzScreen');
+            const confirmScreen = document.getElementById('confirmScreen');
             
-            // Элементы конструктора
-            const teamTitle = document.getElementById('team-title');
             const positions = document.querySelectorAll('.position');
             const positionWrappers = document.querySelectorAll('.position-wrapper');
             const selectorPanel = document.getElementById('selectorPanel');
@@ -434,60 +449,122 @@
             
             let currentPositionElement = null;
 
-            // URL параметры
-            const urlParams = new URLSearchParams(window.location.search);
-            team = urlParams.get('team') || 'Барселона';
-            teamTitle.textContent = `Состав ${team}`;
-
-            const jsonFileName = team.toLowerCase() + '.json';
-
-            // Функция переключения экранов
+            // Переключение экранов
             function showScreen(screenName) {
                 constructorScreen.classList.remove('active');
                 formScreen.classList.remove('active');
-                pvzScreen.classList.remove('active');
+                confirmScreen.classList.remove('active');
                 
                 if (screenName === 'constructor') {
                     constructorScreen.classList.add('active');
                 } else if (screenName === 'form') {
                     formScreen.classList.add('active');
-                    // Заполняем сохранённые данные
                     document.getElementById('fullName').value = customerData.fullName;
                     document.getElementById('phone').value = customerData.phone;
-                } else if (screenName === 'pvz') {
-                    pvzScreen.classList.add('active');
-                    // Инициализируем виджет СДЭК при первом показе
-                    if (!window.cdekWidgetInited) {
-                        initCdekWidget();
-                        window.cdekWidgetInited = true;
+                    document.getElementById('address').value = customerData.address;
+                    
+                    // Инициализируем intl-tel-input при первом показе
+                    if (!iti) {
+                        const input = document.querySelector('#phone');
+                        iti = window.intlTelInput(input, {
+                            initialCountry: "ru",
+                            separateDialCode: true,
+                            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+                        });
                     }
+                    
+                    // Инициализируем DaData suggestions
+                    initDaData();
+                } else if (screenName === 'confirm') {
+                    confirmScreen.classList.add('active');
+                    // Здесь можно отправить данные боту через Telegram.WebApp.sendData()
+                    sendOrderToBot();
                 }
-                currentScreen = screenName;
             }
 
-            // Инициализация виджета СДЭК [citation:1]
-            function initCdekWidget() {
-                // Город можно определить или спросить, пока ставим Москву
-                const city = 'Москва';
+            // Инициализация DaData
+            function initDaData() {
+                if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
+                    $("#address").suggestions({
+                        token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba", // API ключ
+                        type: "ADDRESS",
+                        onSelect: function(suggestion) {
+                            selectedAddress = suggestion.value;
+                            customerData.address = selectedAddress;
+                            document.getElementById('addressError').classList.remove('visible');
+                        }
+                    });
+                }
+            }
+
+            // Валидация телефона
+            function validatePhone() {
+                if (!iti) return false;
+                const errorElement = document.getElementById('phoneError');
                 
-                const container = document.getElementById('pvzContainer');
-                container.innerHTML = ''; // очищаем
+                if (iti.isValidNumber()) {
+                    errorElement.classList.remove('visible');
+                    return true;
+                } else {
+                    errorElement.textContent = 'Неверный номер телефона';
+                    errorElement.classList.add('visible');
+                    return false;
+                }
+            }
+
+            // Валидация адреса (проверяем, что выбран из подсказок)
+            function validateAddress() {
+                const addressInput = document.getElementById('address');
+                const errorElement = document.getElementById('addressError');
                 
-                // Параметры виджета
-                const widget = new window.CDEKWidget({
-                    root: container,
-                    apiKey: '', // можно оставить пустым для теста, но лучше получить на сайте СДЭК
-                    defaultLocation: city,
-                    onChoose: function(pvz) {
-                        selectedPVZ = pvz;
-                        console.log('Выбран ПВЗ:', pvz);
-                        alert('ПВЗ выбран: ' + pvz.address);
-                        // Здесь можно сохранить и завершить
+                if (selectedAddress && addressInput.value === selectedAddress) {
+                    errorElement.classList.remove('visible');
+                    return true;
+                } else {
+                    errorElement.classList.add('visible');
+                    return false;
+                }
+            }
+
+            // Отправка данных в Telegram
+            function sendOrderToBot() {
+                // Собираем состав
+                const composition = {
+                    team: team,
+                    customer: {
+                        fullName: customerData.fullName,
+                        phone: customerData.phone,
+                        address: customerData.address
+                    },
+                    players: []
+                };
+
+                positionWrappers.forEach(wrapper => {
+                    const positionDiv = wrapper.querySelector('.position');
+                    const labelDiv = wrapper.querySelector('.position-label');
+                    if (!positionDiv || !labelDiv) return;
+
+                    const playerName = fieldPositions.get(positionDiv);
+                    if (playerName) {
+                        composition.players.push({
+                            position: labelDiv.textContent,
+                            name: playerName
+                        });
                     }
                 });
+
+                const jsonData = JSON.stringify(composition, null, 2);
+
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.sendData(jsonData);
+                    Telegram.WebApp.showAlert('Заказ отправлен! Мы свяжемся с вами.');
+                } else {
+                    console.log('Отправляемые данные:', jsonData);
+                    alert('Вне Telegram данные не отправляются. Смотрите консоль.');
+                }
             }
 
-            // Загрузка данных игроков (без изменений, как было)
+            // Загрузка данных игроков
             async function loadTeamData() {
                 try {
                     const response = await fetch(jsonFileName);
@@ -507,28 +584,34 @@
 
                 closeSelector.addEventListener('click', closePanel);
                 document.getElementById('clearButton').addEventListener('click', clearField);
-                
-                // Кнопка "Подтвердить" теперь ведёт на экран формы
-                document.getElementById('orderButton').addEventListener('click', () => {
-                    showScreen('form');
-                });
+                document.getElementById('orderButton').addEventListener('click', () => showScreen('form'));
 
-                // Навигация между экранами
+                // Навигация
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
+                document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
                 
-                document.getElementById('nextToPVZ').addEventListener('click', () => {
-                    // Сохраняем данные формы
+                document.getElementById('nextToConfirm').addEventListener('click', () => {
                     customerData.fullName = document.getElementById('fullName').value;
-                    customerData.phone = document.getElementById('phone').value;
                     
-                    if (!customerData.fullName || !customerData.phone) {
-                        alert('Заполните все поля');
+                    if (!customerData.fullName.trim()) {
+                        alert('Введите ФИО');
                         return;
                     }
                     
-                    showScreen('pvz');
+                    if (!validatePhone()) {
+                        return;
+                    }
+                    
+                    if (!validateAddress()) {
+                        return;
+                    }
+                    
+                    // Сохраняем телефон в международном формате
+                    customerData.phone = iti.getNumber();
+                    
+                    showScreen('confirm');
                 });
 
                 window.addEventListener('click', (e) => {
@@ -538,7 +621,7 @@
                 });
             }
 
-            // --- Все функции конструктора (без изменений) ---
+            // --- Функции конструктора (без изменений) ---
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
                 const currentPlayer = fieldPositions.get(positionElement);
