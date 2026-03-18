@@ -234,8 +234,15 @@
             border-radius: 8px;
             font-size: 16px;
         }
+        /* Для intl-tel-input */
         .iti {
             width: 100%;
+        }
+        .form-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
         }
         .error-message {
             color: #dc3545;
@@ -290,7 +297,6 @@
         .screen.active {
             display: block;
         }
-        /* Финальное сообщение */
         .success-message {
             background: white;
             border-radius: 20px;
@@ -395,8 +401,9 @@
                     <div id="phoneError" class="error-message"></div>
                 </div>
                 <div class="form-group">
-                    <label for="address">Адрес получения (ПВЗ или курьером)</label>
+                    <label for="address">Адрес ПВЗ СДЕК для получения</label>
                     <input type="text" id="address" placeholder="Начните вводить адрес..." autocomplete="off">
+                    <div class="form-note">*При отсутствии ПВЗ на выбранном адресе будет выбран ближайший</div>
                     <div id="addressError" class="error-message">Пожалуйста, выберите адрес из списка</div>
                 </div>
                 <div class="button-group">
@@ -406,7 +413,7 @@
             </div>
         </div>
 
-        <!-- Шаг 3: Финальное подтверждение (вместо карты) -->
+        <!-- Шаг 3: Финальное подтверждение -->
         <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
@@ -469,7 +476,14 @@
                         iti = window.intlTelInput(input, {
                             initialCountry: "ru",
                             separateDialCode: true,
+                            autoPlaceholder: "polite",
                             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+                        });
+                        
+                        // Устанавливаем максимальную длину для номера (10 цифр после кода)
+                        input.addEventListener('input', function() {
+                            let number = iti.getNumber();
+                            // Если нужно, можно ограничить, но библиотека сама форматирует
                         });
                     }
                     
@@ -477,7 +491,6 @@
                     initDaData();
                 } else if (screenName === 'confirm') {
                     confirmScreen.classList.add('active');
-                    // Здесь можно отправить данные боту через Telegram.WebApp.sendData()
                     sendOrderToBot();
                 }
             }
@@ -486,12 +499,19 @@
             function initDaData() {
                 if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
                     $("#address").suggestions({
-                        token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba", // API ключ
+                        token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba",
                         type: "ADDRESS",
                         onSelect: function(suggestion) {
                             selectedAddress = suggestion.value;
                             customerData.address = selectedAddress;
                             document.getElementById('addressError').classList.remove('visible');
+                        }
+                    });
+                    
+                    // Сбрасываем выбранный адрес, если пользователь начинает редактировать поле вручную
+                    $('#address').on('input', function() {
+                        if (this.value !== selectedAddress) {
+                            selectedAddress = '';
                         }
                     });
                 }
@@ -512,7 +532,7 @@
                 }
             }
 
-            // Валидация адреса (проверяем, что выбран из подсказок)
+            // Валидация адреса
             function validateAddress() {
                 const addressInput = document.getElementById('address');
                 const errorElement = document.getElementById('addressError');
@@ -593,9 +613,9 @@
                 document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
                 
                 document.getElementById('nextToConfirm').addEventListener('click', () => {
-                    customerData.fullName = document.getElementById('fullName').value;
+                    customerData.fullName = document.getElementById('fullName').value.trim();
                     
-                    if (!customerData.fullName.trim()) {
+                    if (!customerData.fullName) {
                         alert('Введите ФИО');
                         return;
                     }
@@ -608,7 +628,6 @@
                         return;
                     }
                     
-                    // Сохраняем телефон в международном формате
                     customerData.phone = iti.getNumber();
                     
                     showScreen('confirm');
