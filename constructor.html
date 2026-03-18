@@ -60,6 +60,12 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        .position-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
+        }
         .position {
             width: 70px;
             height: 100px;
@@ -103,21 +109,12 @@
             pointer-events: none;
             line-height: 1.2;
         }
-        .position .position-label {
-            position: absolute;
-            bottom: 4px;
-            left: 0;
-            right: 0;
-            text-align: center;
+        .position-label {
+            margin-top: 4px;
             font-size: 12px;
             font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px black;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .position.filled .position-label {
-            display: none;
+            color: #333;
+            text-align: center;
         }
 
         /* Панель выбора игроков */
@@ -206,26 +203,16 @@
             font-weight: bold;
             color: #666;
             margin: 8px 0;
-            position: relative;
-        }
-        .separator::before,
-        .separator::after {
-            content: '';
-            display: inline-block;
-            width: 30%;
-            height: 1px;
-            background: #ccc;
-            vertical-align: middle;
-            margin: 0 10px;
         }
 
-        .clear-button {
-            display: block;
-            width: fit-content;
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin: 20px auto 0;
+        }
+        .action-button {
             padding: 10px 24px;
-            background: #dc3545;
-            color: white;
             border: none;
             border-radius: 30px;
             font-size: 1rem;
@@ -234,8 +221,19 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             transition: background 0.2s;
         }
+        .clear-button {
+            background: #dc3545;
+            color: white;
+        }
         .clear-button:hover {
             background: #c82333;
+        }
+        .order-button {
+            background: #28a745;
+            color: white;
+        }
+        .order-button:hover {
+            background: #218838;
         }
         .error-message {
             color: red;
@@ -248,31 +246,64 @@
     <a href="index.html" class="back-button">← Назад к командам</a>
     <h2 id="team-title">Загрузка...</h2>
 
-    <!-- Поле с позициями (70x100, подписи) -->
+    <!-- Поле с позициями -->
     <div class="field" id="field">
         <div class="positions-grid" id="positionsGrid">
             <!-- Нападение -->
             <div class="line">
-                <div class="position" data-position="FWD" data-label="LW"><span class="position-label">LW</span></div>
-                <div class="position" data-position="FWD" data-label="ST"><span class="position-label">ST</span></div>
-                <div class="position" data-position="FWD" data-label="RW"><span class="position-label">RW</span></div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="FWD"></div>
+                    <div class="position-label">LW</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="FWD"></div>
+                    <div class="position-label">ST</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="FWD"></div>
+                    <div class="position-label">RW</div>
+                </div>
             </div>
             <!-- Полузащита -->
             <div class="line">
-                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
-                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
-                <div class="position" data-position="MID" data-label="CM"><span class="position-label">CM</span></div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="MID"></div>
+                    <div class="position-label">CM</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="MID"></div>
+                    <div class="position-label">CM</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="MID"></div>
+                    <div class="position-label">CM</div>
+                </div>
             </div>
             <!-- Защита -->
             <div class="line">
-                <div class="position" data-position="DEF" data-label="LB"><span class="position-label">LB</span></div>
-                <div class="position" data-position="DEF" data-label="CB"><span class="position-label">CB</span></div>
-                <div class="position" data-position="DEF" data-label="CB"><span class="position-label">CB</span></div>
-                <div class="position" data-position="DEF" data-label="RB"><span class="position-label">RB</span></div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="DEF"></div>
+                    <div class="position-label">LB</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="DEF"></div>
+                    <div class="position-label">CB</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="DEF"></div>
+                    <div class="position-label">CB</div>
+                </div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="DEF"></div>
+                    <div class="position-label">RB</div>
+                </div>
             </div>
             <!-- Вратарь -->
             <div class="line">
-                <div class="position" data-position="GK" data-label="GK"><span class="position-label">GK</span></div>
+                <div class="position-wrapper">
+                    <div class="position" data-position="GK"></div>
+                    <div class="position-label">GK</div>
+                </div>
             </div>
         </div>
     </div>
@@ -286,7 +317,10 @@
         <div class="players-list" id="playersList"></div>
     </div>
 
-    <button class="clear-button" id="clearButton">Очистить состав</button>
+    <div class="button-group">
+        <button class="action-button clear-button" id="clearButton">Очистить состав</button>
+        <button class="action-button order-button" id="orderButton">Подтвердить</button>
+    </div>
 
     <script>
         (function() {
@@ -298,6 +332,7 @@
             let playersData = [];
             const fieldPositions = new Map(); // key: DOM position, value: player name
 
+            const positionWrappers = document.querySelectorAll('.position-wrapper');
             const positions = document.querySelectorAll('.position');
             const selectorPanel = document.getElementById('selectorPanel');
             const playersList = document.getElementById('playersList');
@@ -324,6 +359,7 @@
 
                 closeSelector.addEventListener('click', closePanel);
                 document.getElementById('clearButton').addEventListener('click', clearField);
+                document.getElementById('orderButton').addEventListener('click', sendOrder);
 
                 window.addEventListener('click', (e) => {
                     if (!selectorPanel.contains(e.target) && !e.target.classList.contains('position')) {
@@ -333,7 +369,7 @@
             }
 
             function openSelector(positionElement) {
-                const positionType = positionElement.dataset.position; // GK, DEF, MID, FWD
+                const positionType = positionElement.dataset.position;
                 const currentPlayer = fieldPositions.get(positionElement);
 
                 const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
@@ -445,9 +481,6 @@
                 const variant = player.variants[0];
                 let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
 
-                // Очищаем содержимое, но оставляем лейбл (он скроется через CSS при filled)
-                // Полностью очистим, затем добавим img и span, лейбл уже есть в HTML
-                // Удалим только динамически добавленные элементы (img и .player-name)
                 const oldImg = positionElement.querySelector('img');
                 if (oldImg) oldImg.remove();
                 const oldName = positionElement.querySelector('.player-name');
@@ -480,7 +513,6 @@
 
             function clearField() {
                 positions.forEach(pos => {
-                    // Удаляем img и .player-name
                     const img = pos.querySelector('img');
                     if (img) img.remove();
                     const nameSpan = pos.querySelector('.player-name');
@@ -489,6 +521,37 @@
                     fieldPositions.delete(pos);
                 });
                 closePanel();
+            }
+
+            function sendOrder() {
+                const composition = {
+                    team: team,
+                    players: []
+                };
+
+                positionWrappers.forEach(wrapper => {
+                    const positionDiv = wrapper.querySelector('.position');
+                    const labelDiv = wrapper.querySelector('.position-label');
+                    if (!positionDiv || !labelDiv) return;
+
+                    const playerName = fieldPositions.get(positionDiv);
+                    if (playerName) {
+                        composition.players.push({
+                            position: labelDiv.textContent,
+                            name: playerName
+                        });
+                    }
+                });
+
+                const jsonData = JSON.stringify(composition, null, 2);
+
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.sendData(jsonData);
+                    Telegram.WebApp.showAlert('Заказ отправлен! Мы свяжемся с вами.');
+                } else {
+                    console.log('Отправляемые данные:', jsonData);
+                    alert('Вне Telegram данные не отправляются. Смотрите консоль.');
+                }
             }
 
             loadTeamData();
