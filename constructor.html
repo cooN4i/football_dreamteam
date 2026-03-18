@@ -424,12 +424,12 @@
             </div>
         </div>
 
-        <!-- Шаг 3: Финальное подтверждение (для отладки) -->
+        <!-- Шаг 3: Финальное подтверждение -->
         <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
-                <h2>Успех!</h2>
-                <p>Все данные валидны.</p>
+                <h2>Заказ отправлен!</h2>
+                <p>Спасибо, ваш заказ принят. Мы свяжемся с вами в ближайшее время.</p>
                 <button class="action-button order-button" id="finishButton">Готово</button>
             </div>
         </div>
@@ -469,6 +469,41 @@
             let currentPositionElement = null;
 
             const orderButton = document.getElementById('orderButton');
+
+            // Функция отправки заказа в бота
+            function sendOrderToBot() {
+                // Собираем состав
+                const composition = {
+                    team: team,
+                    customer: customerData,
+                    players: []
+                };
+
+                positionWrappers.forEach(wrapper => {
+                    const positionDiv = wrapper.querySelector('.position');
+                    const labelDiv = wrapper.querySelector('.position-label');
+                    if (!positionDiv || !labelDiv) return;
+
+                    const playerName = fieldPositions.get(positionDiv);
+                    if (playerName) {
+                        composition.players.push({
+                            position: labelDiv.textContent,
+                            name: playerName
+                        });
+                    }
+                });
+
+                const jsonData = JSON.stringify(composition);
+
+                // Отправляем через Telegram WebApp
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.sendData(jsonData);
+                    console.log('Данные отправлены:', jsonData);
+                } else {
+                    console.log('Вне Telegram: данные не отправлены', jsonData);
+                    alert('Тестовый режим: данные не отправлены. Смотри консоль.');
+                }
+            }
 
             // Переключение экранов
             function showScreen(screenName) {
@@ -574,7 +609,6 @@
 
             // Валидация отчества (необязательно)
             function validatePatronymic() {
-                // Может быть пустым, всегда ок
                 return true;
             }
 
@@ -633,8 +667,10 @@
                     customerData.phone = iti.getNumber();
                     customerData.address = document.getElementById('address').value.trim();
                     
-                    alert('Успех! Данные валидны.');
+                    // Отправляем данные боту
+                    sendOrderToBot();
                     
+                    // Показываем подтверждение
                     showScreen('confirm');
                 });
 
@@ -658,7 +694,6 @@
                 const availablePlayers = getAvailablePlayers(positionType, currentPlayer);
                 renderPlayerList(availablePlayers, positionType, currentPlayer);
 
-                // Принудительно сбрасываем прокрутку панели в самый верх
                 setTimeout(() => {
                     selectorPanel.scrollTop = 0;
                 }, 0);
