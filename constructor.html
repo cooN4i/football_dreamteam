@@ -6,6 +6,9 @@
     <title>Конструктор состава</title>
     <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Виджет СДЭК (подключаем CSS и JS) -->
+    <link href="https://widget.cdek.ru/widget/css/widget.css" rel="stylesheet">
+    <script src="https://widget.cdek.ru/widget/js/widget.js"></script>
     <!-- Отключаем кеширование -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -30,6 +33,7 @@
             text-decoration: none;
             color: black;
             font-weight: 500;
+            cursor: pointer;
         }
         h2 {
             margin-top: 0;
@@ -205,11 +209,36 @@
             margin: 8px 0;
         }
 
+        /* Стили для формы */
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
         .button-group {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin: 20px auto 0;
+            flex-wrap: wrap;
         }
         .action-button {
             padding: 10px 24px;
@@ -235,112 +264,230 @@
         .order-button:hover {
             background: #218838;
         }
+        .secondary-button {
+            background: #6c757d;
+            color: white;
+        }
+        .secondary-button:hover {
+            background: #5a6268;
+        }
+
+        /* Контейнер для карты ПВЗ */
+        #pvzContainer {
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
         .error-message {
             color: red;
             text-align: center;
             padding: 20px;
         }
+        /* Скрытие/показ экранов */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-button">← Назад к командам</a>
-    <h2 id="team-title">Загрузка...</h2>
+    <div id="app">
+        <!-- Шаг 1: Конструктор состава -->
+        <div id="constructorScreen" class="screen active">
+            <a href="index.html" class="back-button">← Назад к командам</a>
+            <h2 id="team-title">Загрузка...</h2>
+            
+            <div class="field" id="field">
+                <div class="positions-grid" id="positionsGrid">
+                    <div class="line">
+                        <div class="position-wrapper">
+                            <div class="position" data-position="FWD"></div>
+                            <div class="position-label">LW</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="FWD"></div>
+                            <div class="position-label">ST</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="FWD"></div>
+                            <div class="position-label">RW</div>
+                        </div>
+                    </div>
+                    <div class="line">
+                        <div class="position-wrapper">
+                            <div class="position" data-position="MID"></div>
+                            <div class="position-label">CM</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="MID"></div>
+                            <div class="position-label">CM</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="MID"></div>
+                            <div class="position-label">CM</div>
+                        </div>
+                    </div>
+                    <div class="line">
+                        <div class="position-wrapper">
+                            <div class="position" data-position="DEF"></div>
+                            <div class="position-label">LB</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="DEF"></div>
+                            <div class="position-label">CB</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="DEF"></div>
+                            <div class="position-label">CB</div>
+                        </div>
+                        <div class="position-wrapper">
+                            <div class="position" data-position="DEF"></div>
+                            <div class="position-label">RB</div>
+                        </div>
+                    </div>
+                    <div class="line">
+                        <div class="position-wrapper">
+                            <div class="position" data-position="GK"></div>
+                            <div class="position-label">GK</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Поле с позициями -->
-    <div class="field" id="field">
-        <div class="positions-grid" id="positionsGrid">
-            <!-- Нападение -->
-            <div class="line">
-                <div class="position-wrapper">
-                    <div class="position" data-position="FWD"></div>
-                    <div class="position-label">LW</div>
+            <div class="selector-panel" id="selectorPanel">
+                <div class="selector-header">
+                    <h3 id="selectorTitle">Выберите игрока</h3>
+                    <button class="close-button" id="closeSelector">&times;</button>
                 </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="FWD"></div>
-                    <div class="position-label">ST</div>
-                </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="FWD"></div>
-                    <div class="position-label">RW</div>
-                </div>
+                <div class="players-list" id="playersList"></div>
             </div>
-            <!-- Полузащита -->
-            <div class="line">
-                <div class="position-wrapper">
-                    <div class="position" data-position="MID"></div>
-                    <div class="position-label">CM</div>
-                </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="MID"></div>
-                    <div class="position-label">CM</div>
-                </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="MID"></div>
-                    <div class="position-label">CM</div>
-                </div>
+
+            <div class="button-group">
+                <button class="action-button clear-button" id="clearButton">Очистить состав</button>
+                <button class="action-button order-button" id="orderButton">Подтвердить</button>
             </div>
-            <!-- Защита -->
-            <div class="line">
-                <div class="position-wrapper">
-                    <div class="position" data-position="DEF"></div>
-                    <div class="position-label">LB</div>
+        </div>
+
+        <!-- Шаг 2: Форма с контактными данными -->
+        <div id="formScreen" class="screen">
+            <button class="back-button" id="backToConstructor">← Назад к составу</button>
+            <h2>Контактные данные</h2>
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="fullName">ФИО</label>
+                    <input type="text" id="fullName" placeholder="Иванов Иван Иванович">
                 </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="DEF"></div>
-                    <div class="position-label">CB</div>
+                <div class="form-group">
+                    <label for="phone">Номер телефона</label>
+                    <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
                 </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="DEF"></div>
-                    <div class="position-label">CB</div>
-                </div>
-                <div class="position-wrapper">
-                    <div class="position" data-position="DEF"></div>
-                    <div class="position-label">RB</div>
-                </div>
-            </div>
-            <!-- Вратарь -->
-            <div class="line">
-                <div class="position-wrapper">
-                    <div class="position" data-position="GK"></div>
-                    <div class="position-label">GK</div>
+                <div class="button-group">
+                    <button class="action-button secondary-button" id="backFromForm">Назад</button>
+                    <button class="action-button order-button" id="nextToPVZ">Далее</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Панель выбора игроков -->
-    <div class="selector-panel" id="selectorPanel">
-        <div class="selector-header">
-            <h3 id="selectorTitle">Выберите игрока</h3>
-            <button class="close-button" id="closeSelector">&times;</button>
+        <!-- Шаг 3: Выбор ПВЗ СДЭК -->
+        <div id="pvzScreen" class="screen">
+            <button class="back-button" id="backToForm">← Назад к контактам</button>
+            <h2>Выберите пункт выдачи СДЭК</h2>
+            <div id="pvzContainer"></div>
+            <p>Выберите ПВЗ на карте — это финальный шаг</p>
         </div>
-        <div class="players-list" id="playersList"></div>
-    </div>
-
-    <div class="button-group">
-        <button class="action-button clear-button" id="clearButton">Очистить состав</button>
-        <button class="action-button order-button" id="orderButton">Подтвердить</button>
     </div>
 
     <script>
         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            let team = urlParams.get('team') || 'Барселона';
-            document.getElementById('team-title').textContent = `Состав ${team}`;
-
-            const jsonFileName = team.toLowerCase() + '.json';
+            // Состояние приложения
+            let currentScreen = 'constructor'; // constructor, form, pvz
+            let team = '';
             let playersData = [];
             const fieldPositions = new Map(); // key: DOM position, value: player name
+            
+            // Данные формы
+            let customerData = {
+                fullName: '',
+                phone: ''
+            };
+            
+            // Выбранный ПВЗ
+            let selectedPVZ = null;
 
-            const positionWrappers = document.querySelectorAll('.position-wrapper');
+            // DOM элементы
+            const constructorScreen = document.getElementById('constructorScreen');
+            const formScreen = document.getElementById('formScreen');
+            const pvzScreen = document.getElementById('pvzScreen');
+            
+            // Элементы конструктора
+            const teamTitle = document.getElementById('team-title');
             const positions = document.querySelectorAll('.position');
+            const positionWrappers = document.querySelectorAll('.position-wrapper');
             const selectorPanel = document.getElementById('selectorPanel');
             const playersList = document.getElementById('playersList');
             const selectorTitle = document.getElementById('selectorTitle');
             const closeSelector = document.getElementById('closeSelector');
-
+            
             let currentPositionElement = null;
 
+            // URL параметры
+            const urlParams = new URLSearchParams(window.location.search);
+            team = urlParams.get('team') || 'Барселона';
+            teamTitle.textContent = `Состав ${team}`;
+
+            const jsonFileName = team.toLowerCase() + '.json';
+
+            // Функция переключения экранов
+            function showScreen(screenName) {
+                constructorScreen.classList.remove('active');
+                formScreen.classList.remove('active');
+                pvzScreen.classList.remove('active');
+                
+                if (screenName === 'constructor') {
+                    constructorScreen.classList.add('active');
+                } else if (screenName === 'form') {
+                    formScreen.classList.add('active');
+                    // Заполняем сохранённые данные
+                    document.getElementById('fullName').value = customerData.fullName;
+                    document.getElementById('phone').value = customerData.phone;
+                } else if (screenName === 'pvz') {
+                    pvzScreen.classList.add('active');
+                    // Инициализируем виджет СДЭК при первом показе
+                    if (!window.cdekWidgetInited) {
+                        initCdekWidget();
+                        window.cdekWidgetInited = true;
+                    }
+                }
+                currentScreen = screenName;
+            }
+
+            // Инициализация виджета СДЭК [citation:1]
+            function initCdekWidget() {
+                // Город можно определить или спросить, пока ставим Москву
+                const city = 'Москва';
+                
+                const container = document.getElementById('pvzContainer');
+                container.innerHTML = ''; // очищаем
+                
+                // Параметры виджета
+                const widget = new window.CDEKWidget({
+                    root: container,
+                    apiKey: '', // можно оставить пустым для теста, но лучше получить на сайте СДЭК
+                    defaultLocation: city,
+                    onChoose: function(pvz) {
+                        selectedPVZ = pvz;
+                        console.log('Выбран ПВЗ:', pvz);
+                        alert('ПВЗ выбран: ' + pvz.address);
+                        // Здесь можно сохранить и завершить
+                    }
+                });
+            }
+
+            // Загрузка данных игроков (без изменений, как было)
             async function loadTeamData() {
                 try {
                     const response = await fetch(jsonFileName);
@@ -352,6 +499,7 @@
                 }
             }
 
+            // Инициализация конструктора
             function initApp() {
                 positions.forEach(pos => {
                     pos.addEventListener('click', () => openSelector(pos));
@@ -359,7 +507,29 @@
 
                 closeSelector.addEventListener('click', closePanel);
                 document.getElementById('clearButton').addEventListener('click', clearField);
-                document.getElementById('orderButton').addEventListener('click', sendOrder);
+                
+                // Кнопка "Подтвердить" теперь ведёт на экран формы
+                document.getElementById('orderButton').addEventListener('click', () => {
+                    showScreen('form');
+                });
+
+                // Навигация между экранами
+                document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
+                document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
+                document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
+                
+                document.getElementById('nextToPVZ').addEventListener('click', () => {
+                    // Сохраняем данные формы
+                    customerData.fullName = document.getElementById('fullName').value;
+                    customerData.phone = document.getElementById('phone').value;
+                    
+                    if (!customerData.fullName || !customerData.phone) {
+                        alert('Заполните все поля');
+                        return;
+                    }
+                    
+                    showScreen('pvz');
+                });
 
                 window.addEventListener('click', (e) => {
                     if (!selectorPanel.contains(e.target) && !e.target.classList.contains('position')) {
@@ -368,6 +538,7 @@
                 });
             }
 
+            // --- Все функции конструктора (без изменений) ---
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
                 const currentPlayer = fieldPositions.get(positionElement);
@@ -523,37 +694,7 @@
                 closePanel();
             }
 
-            function sendOrder() {
-                const composition = {
-                    team: team,
-                    players: []
-                };
-
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-                    if (!positionDiv || !labelDiv) return;
-
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({
-                            position: labelDiv.textContent,
-                            name: playerName
-                        });
-                    }
-                });
-
-                const jsonData = JSON.stringify(composition, null, 2);
-
-                if (window.Telegram && Telegram.WebApp) {
-                    Telegram.WebApp.sendData(jsonData);
-                    Telegram.WebApp.showAlert('Заказ отправлен! Мы свяжемся с вами.');
-                } else {
-                    console.log('Отправляемые данные:', jsonData);
-                    alert('Вне Telegram данные не отправляются. Смотрите консоль.');
-                }
-            }
-
+            // Запуск
             loadTeamData();
         })();
     </script>
