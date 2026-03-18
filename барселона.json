@@ -1,0 +1,320 @@
+[
+  {
+    "name": "Иньеста",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "16/17",
+        "stock": 2,
+        "image": "лалига\\барселона\\наклейки\\iniesta1617.png"
+      }
+    ]
+  },
+  {
+    "name": "Кунде",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 2,
+        "image": "лалига\\барселона\\наклейки\\kounde2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Де Йонг",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 2,
+        "image": "лалига\\барселона\\наклейки\\dejong2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Левандовски",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\lewandowski2526.png"
+      },
+      {
+        "season": "24/25",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\lewandowski2425.png"
+      }
+    ]
+  },
+  {
+    "name": "Ямаль",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "24/25",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\yamal2425.png"
+      }
+    ]
+  },
+  {
+    "name": "Месси",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\messi1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Алькасер",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\alcacer1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Суарез",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\suarez1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Деулофеу",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\deulofeu1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Дембеле",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\dembele1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Бускетс",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\busquets1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Маскерано",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\mascherano1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Роберто",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\roberto1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Семеду",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\semedo1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Умтити",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\umtiti1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Пике",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\pique1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Альба",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\alba1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Тер Штеген",
+    "position": "ВРТ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\terstegen1718.png"
+      }
+    ]
+  },
+  {
+    "name": "Гави",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "24/25",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\gavi2425.png"
+      }
+    ]
+  },
+  {
+    "name": "Жоан Гарсия",
+    "position": "ВРТ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\joangarcia2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Кубарси",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\cubarsi2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Араухо",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\araujo2526.png"
+      },
+      {
+        "season": "24/25",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\araujo2425.png"
+      }
+    ]
+  },
+  {
+    "name": "Эрик Гарсия",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\ericgarcia2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Бальде",
+    "position": "ЗАЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\balde2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Лопез",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\ferminlopez2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Педри",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\pedri2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Ольмо",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\olmo2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Ракитич",
+    "position": "ПЗЩ",
+    "variants": [
+      {
+        "season": "17/18",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\rakitic1718.png"
+      }
+    ]
+  }
+]

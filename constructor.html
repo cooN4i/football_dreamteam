@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор состава</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background: #f0f2f5;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 16px;
+            padding: 8px 16px;
+            background: #ddd;
+            border-radius: 20px;
+            text-decoration: none;
+            color: black;
+            font-weight: 500;
+        }
+        h2 {
+            margin-top: 0;
+        }
+
+        /* Поле */
+        .field {
+            background: #1a7f3d;
+            aspect-ratio: 2 / 3;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            border-radius: 24px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 3px solid #0a4d24;
+            padding: 10px;
+        }
+        .positions-grid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .line {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .position {
+            width: 50px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+        .position.highlight {
+            background: rgba(255, 215, 0, 0.6);
+            border-color: gold;
+        }
+        .position.filled {
+            border-color: white;
+        }
+        .position img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .position .player-name {
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.7);
+            padding: 2px 2px;
+            border-radius: 3px;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+            pointer-events: none;
+            line-height: 1.2;
+        }
+
+        /* Панель выбора игроков */
+        .selector-panel {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+            padding: 16px;
+            max-height: 60vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .selector-panel.active {
+            display: block;
+        }
+        .selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .selector-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+        .players-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .player-option {
+            width: 50px;
+            height: 70px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            transition: transform 0.1s;
+        }
+        .player-option:active {
+            transform: scale(0.98);
+        }
+        .player-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .player-option .player-name {
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.7);
+            padding: 2px 2px;
+            border-radius: 3px;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .separator {
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            margin: 8px 0;
+            position: relative;
+        }
+        .separator::before,
+        .separator::after {
+            content: '';
+            display: inline-block;
+            width: 30%;
+            height: 1px;
+            background: #ccc;
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+
+        .clear-button {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0;
+            padding: 10px 24px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        .clear-button:hover {
+            background: #c82333;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">← Назад к командам</a>
+    <h2 id="team-title">Загрузка...</h2>
+
+    <!-- Поле с позициями -->
+    <div class="field" id="field">
+        <div class="positions-grid" id="positionsGrid">
+            <div class="line">
+                <div class="position" data-position="FWD" data-line="0" data-index="0"></div>
+                <div class="position" data-position="FWD" data-line="0" data-index="1"></div>
+                <div class="position" data-position="FWD" data-line="0" data-index="2"></div>
+            </div>
+            <div class="line">
+                <div class="position" data-position="MID" data-line="1" data-index="0"></div>
+                <div class="position" data-position="MID" data-line="1" data-index="1"></div>
+                <div class="position" data-position="MID" data-line="1" data-index="2"></div>
+            </div>
+            <div class="line">
+                <div class="position" data-position="DEF" data-line="2" data-index="0"></div>
+                <div class="position" data-position="DEF" data-line="2" data-index="1"></div>
+                <div class="position" data-position="DEF" data-line="2" data-index="2"></div>
+                <div class="position" data-position="DEF" data-line="2" data-index="3"></div>
+            </div>
+            <div class="line">
+                <div class="position" data-position="GK" data-line="3" data-index="0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель выбора игроков -->
+    <div class="selector-panel" id="selectorPanel">
+        <div class="selector-header">
+            <h3 id="selectorTitle">Выберите игрока</h3>
+            <button class="close-button" id="closeSelector">&times;</button>
+        </div>
+        <div class="players-list" id="playersList"></div>
+    </div>
+
+    <button class="clear-button" id="clearButton">Очистить состав</button>
+
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let team = urlParams.get('team') || 'Барселона';
+            document.getElementById('team-title').textContent = `Состав ${team}`;
+
+            const jsonFileName = team.toLowerCase() + '.json';
+            let playersData = [];
+            const fieldPositions = new Map();
+
+            const positions = document.querySelectorAll('.position');
+            const selectorPanel = document.getElementById('selectorPanel');
+            const playersList = document.getElementById('playersList');
+            const selectorTitle = document.getElementById('selectorTitle');
+            const closeSelector = document.getElementById('closeSelector');
+
+            let currentPositionElement = null;
+
+            async function loadTeamData() {
+                try {
+                    const response = await fetch(jsonFileName);
+                    if (!response.ok) throw new Error(`Файл ${jsonFileName} не найден`);
+                    playersData = await response.json();
+                    initApp();
+                } catch (error) {
+                    document.body.innerHTML += `<div class="error-message">Ошибка загрузки данных: ${error.message}</div>`;
+                }
+            }
+
+            function initApp() {
+                positions.forEach(pos => {
+                    pos.addEventListener('click', () => openSelector(pos));
+                });
+
+                closeSelector.addEventListener('click', closePanel);
+                document.getElementById('clearButton').addEventListener('click', clearField);
+
+                window.addEventListener('click', (e) => {
+                    if (!selectorPanel.contains(e.target) && !e.target.classList.contains('position')) {
+                        closePanel();
+                    }
+                });
+            }
+
+            function openSelector(positionElement) {
+                const positionType = positionElement.dataset.position;
+                const currentPlayer = fieldPositions.get(positionElement);
+
+                const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
+                selectorTitle.textContent = `Выберите ${positionNames[positionType]}`;
+
+                const availablePlayers = getAvailablePlayers(positionType, currentPlayer);
+                renderPlayerList(availablePlayers, positionType, currentPlayer);
+
+                currentPositionElement = positionElement;
+                selectorPanel.classList.add('active');
+            }
+
+            function getAvailablePlayers(positionType, currentPlayerName) {
+                let rusPosition = '';
+                if (positionType === 'GK') rusPosition = 'ВРТ';
+                else if (positionType === 'DEF') rusPosition = 'ЗАЩ';
+                else if (positionType === 'MID') rusPosition = 'ПЗЩ';
+                else if (positionType === 'FWD') rusPosition = 'НАП';
+
+                const occupiedPlayers = new Set();
+                for (let [pos, name] of fieldPositions.entries()) {
+                    if (pos !== currentPositionElement) {
+                        occupiedPlayers.add(name);
+                    }
+                }
+
+                let allFree = playersData.filter(p => !occupiedPlayers.has(p.name));
+
+                if (rusPosition === 'ВРТ') {
+                    return { same: allFree.filter(p => p.position === 'ВРТ'), other: [] };
+                }
+
+                const samePos = allFree.filter(p => p.position === rusPosition);
+                const otherPos = allFree.filter(p => p.position !== rusPosition && p.position !== 'ВРТ');
+
+                return { same: samePos, other: otherPos };
+            }
+
+            function renderPlayerList(available, positionType, currentPlayerName) {
+                playersList.innerHTML = '';
+
+                if (positionType === 'GK') {
+                    available.same.forEach(player => {
+                        playersList.appendChild(createPlayerOption(player));
+                    });
+                } else {
+                    available.same.forEach(player => {
+                        playersList.appendChild(createPlayerOption(player));
+                    });
+
+                    if (available.same.length > 0 && available.other.length > 0) {
+                        const separator = document.createElement('div');
+                        separator.className = 'separator';
+                        separator.textContent = 'Другие позиции';
+                        playersList.appendChild(separator);
+                    }
+
+                    available.other.forEach(player => {
+                        playersList.appendChild(createPlayerOption(player));
+                    });
+                }
+            }
+
+            function createPlayerOption(player) {
+                const variant = player.variants[0];
+                let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
+
+                const div = document.createElement('div');
+                div.className = 'player-option';
+                div.dataset.name = player.name;
+                div.dataset.position = player.position;
+
+                const img = document.createElement('img');
+                img.src = imagePath;
+                img.alt = player.name;
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    div.style.backgroundColor = '#d3d3d3';
+                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
+                    nameSpan.style.color = 'white';
+                };
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'player-name';
+                nameSpan.textContent = player.name;
+
+                div.appendChild(img);
+                div.appendChild(nameSpan);
+
+                div.addEventListener('click', () => selectPlayer(player.name, currentPositionElement));
+
+                return div;
+            }
+
+            function selectPlayer(playerName, positionElement) {
+                if (fieldPositions.has(positionElement)) {
+                    fieldPositions.delete(positionElement);
+                }
+
+                fieldPositions.set(positionElement, playerName);
+                updatePositionDisplay(positionElement, playerName);
+                closePanel();
+            }
+
+            function updatePositionDisplay(positionElement, playerName) {
+                const player = playersData.find(p => p.name === playerName);
+                if (!player) return;
+
+                const variant = player.variants[0];
+                let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
+
+                positionElement.innerHTML = '';
+
+                const img = document.createElement('img');
+                img.src = imagePath;
+                img.alt = playerName;
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    positionElement.style.backgroundColor = '#d3d3d3';
+                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
+                    nameSpan.style.color = 'white';
+                };
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'player-name';
+                nameSpan.textContent = playerName;
+
+                positionElement.appendChild(img);
+                positionElement.appendChild(nameSpan);
+
+                positionElement.classList.add('filled');
+            }
+
+            function closePanel() {
+                selectorPanel.classList.remove('active');
+                currentPositionElement = null;
+            }
+
+            function clearField() {
+                positions.forEach(pos => {
+                    pos.innerHTML = '';
+                    pos.classList.remove('filled');
+                    fieldPositions.delete(pos);
+                });
+                closePanel();
+            }
+
+            loadTeamData();
+        })();
+    </script>
+</body>
+</html>
