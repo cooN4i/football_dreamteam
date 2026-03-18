@@ -21,7 +21,7 @@
     <style>
         * {
             box-sizing: border-box;
-            user-select: none;
+            /* user-select: none; - убрали глобально */
         }
         body {
             font-family: system-ui, sans-serif;
@@ -85,6 +85,7 @@
             overflow: hidden;
             transition: background 0.2s, border-color 0.2s;
             cursor: pointer;
+            user-select: none; /* только для позиций, не для инпутов */
         }
         .position.filled {
             border-color: white;
@@ -233,6 +234,7 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
+            user-select: text; /* разрешаем выделение и ввод */
         }
         /* Для intl-tel-input */
         .iti {
@@ -382,7 +384,7 @@
 
             <div class="button-group">
                 <button class="action-button clear-button" id="clearButton">Очистить состав</button>
-                <button class="action-button order-button" id="orderButton">Подтвердить</button>
+                <button class="action-button order-button" id="orderButton" disabled>Подтвердить</button>
             </div>
         </div>
 
@@ -394,17 +396,18 @@
                 <div class="form-group">
                     <label for="fullName">ФИО</label>
                     <input type="text" id="fullName" placeholder="Иванов Иван Иванович">
+                    <div id="fullNameError" class="error-message">Введите ФИО</div>
                 </div>
                 <div class="form-group">
                     <label for="phone">Номер телефона</label>
                     <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
-                    <div id="phoneError" class="error-message"></div>
+                    <div id="phoneError" class="error-message">Неверный номер телефона</div>
                 </div>
                 <div class="form-group">
                     <label for="address">Адрес ПВЗ СДЕК для получения</label>
                     <input type="text" id="address" placeholder="Начните вводить адрес..." autocomplete="off">
                     <div class="form-note">*При отсутствии ПВЗ на выбранном адресе будет выбран ближайший</div>
-                    <div id="addressError" class="error-message">Пожалуйста, выберите адрес из списка</div>
+                    <div id="addressError" class="error-message">Введите корректный адрес</div>
                 </div>
                 <div class="button-group">
                     <button class="action-button secondary-button" id="backFromForm">Назад</button>
@@ -413,12 +416,12 @@
             </div>
         </div>
 
-        <!-- Шаг 3: Финальное подтверждение -->
+        <!-- Шаг 3: Финальное подтверждение (пока для отладки) -->
         <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
-                <h2>Заказ сформирован!</h2>
-                <p>Спасибо, ваш заказ принят. Мы свяжемся с вами в ближайшее время.</p>
+                <h2>Успех!</h2>
+                <p>Все данные валидны.</p>
                 <button class="action-button order-button" id="finishButton">Готово</button>
             </div>
         </div>
@@ -432,7 +435,7 @@
 
             const jsonFileName = team.toLowerCase() + '.json';
             let playersData = [];
-            const fieldPositions = new Map();
+            const fieldPositions = new Map(); // key: DOM position, value: player name
             
             let customerData = {
                 fullName: '',
@@ -441,7 +444,6 @@
             };
             
             let iti = null;
-            let selectedAddress = ''; // для хранения выбранного адреса из DaData
 
             const constructorScreen = document.getElementById('constructorScreen');
             const formScreen = document.getElementById('formScreen');
@@ -455,6 +457,9 @@
             const closeSelector = document.getElementById('closeSelector');
             
             let currentPositionElement = null;
+
+            // Элементы для управления кнопкой Подтвердить
+            const orderButton = document.getElementById('orderButton');
 
             // Переключение экранов
             function showScreen(screenName) {
@@ -479,20 +484,23 @@
                             autoPlaceholder: "polite",
                             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
                         });
-                        
-                        // Устанавливаем максимальную длину для номера (10 цифр после кода)
-                        input.addEventListener('input', function() {
-                            let number = iti.getNumber();
-                            // Если нужно, можно ограничить, но библиотека сама форматирует
-                        });
                     }
                     
                     // Инициализируем DaData suggestions
                     initDaData();
                 } else if (screenName === 'confirm') {
                     confirmScreen.classList.add('active');
-                    sendOrderToBot();
                 }
+            }
+
+            // Проверка заполненности состава (11 позиций)
+            function isTeamComplete() {
+                return fieldPositions.size === 11;
+            }
+
+            // Обновление состояния кнопки "Подтвердить"
+            function updateOrderButton() {
+                orderButton.disabled = !isTeamComplete();
             }
 
             // Инициализация DaData
@@ -502,16 +510,8 @@
                         token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba",
                         type: "ADDRESS",
                         onSelect: function(suggestion) {
-                            selectedAddress = suggestion.value;
-                            customerData.address = selectedAddress;
+                            customerData.address = suggestion.value;
                             document.getElementById('addressError').classList.remove('visible');
-                        }
-                    });
-                    
-                    // Сбрасываем выбранный адрес, если пользователь начинает редактировать поле вручную
-                    $('#address').on('input', function() {
-                        if (this.value !== selectedAddress) {
-                            selectedAddress = '';
                         }
                     });
                 }
@@ -526,18 +526,16 @@
                     errorElement.classList.remove('visible');
                     return true;
                 } else {
-                    errorElement.textContent = 'Неверный номер телефона';
                     errorElement.classList.add('visible');
                     return false;
                 }
             }
 
-            // Валидация адреса
-            function validateAddress() {
-                const addressInput = document.getElementById('address');
-                const errorElement = document.getElementById('addressError');
-                
-                if (selectedAddress && addressInput.value === selectedAddress) {
+            // Валидация ФИО
+            function validateFullName() {
+                const value = document.getElementById('fullName').value.trim();
+                const errorElement = document.getElementById('fullNameError');
+                if (value.length >= 3) {
                     errorElement.classList.remove('visible');
                     return true;
                 } else {
@@ -546,41 +544,16 @@
                 }
             }
 
-            // Отправка данных в Telegram
-            function sendOrderToBot() {
-                // Собираем состав
-                const composition = {
-                    team: team,
-                    customer: {
-                        fullName: customerData.fullName,
-                        phone: customerData.phone,
-                        address: customerData.address
-                    },
-                    players: []
-                };
-
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-                    if (!positionDiv || !labelDiv) return;
-
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({
-                            position: labelDiv.textContent,
-                            name: playerName
-                        });
-                    }
-                });
-
-                const jsonData = JSON.stringify(composition, null, 2);
-
-                if (window.Telegram && Telegram.WebApp) {
-                    Telegram.WebApp.sendData(jsonData);
-                    Telegram.WebApp.showAlert('Заказ отправлен! Мы свяжемся с вами.');
+            // Валидация адреса (упрощённая для отладки)
+            function validateAddress() {
+                const value = document.getElementById('address').value.trim();
+                const errorElement = document.getElementById('addressError');
+                if (value.length >= 5) {
+                    errorElement.classList.remove('visible');
+                    return true;
                 } else {
-                    console.log('Отправляемые данные:', jsonData);
-                    alert('Вне Telegram данные не отправляются. Смотрите консоль.');
+                    errorElement.classList.add('visible');
+                    return false;
                 }
             }
 
@@ -613,23 +586,19 @@
                 document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
                 
                 document.getElementById('nextToConfirm').addEventListener('click', () => {
+                    if (!validateFullName()) return;
+                    if (!validatePhone()) return;
+                    if (!validateAddress()) return;
+                    
+                    // Сохраняем данные
                     customerData.fullName = document.getElementById('fullName').value.trim();
-                    
-                    if (!customerData.fullName) {
-                        alert('Введите ФИО');
-                        return;
-                    }
-                    
-                    if (!validatePhone()) {
-                        return;
-                    }
-                    
-                    if (!validateAddress()) {
-                        return;
-                    }
-                    
                     customerData.phone = iti.getNumber();
+                    customerData.address = document.getElementById('address').value.trim();
                     
+                    // Временный alert для отладки
+                    alert('Успех! Данные валидны.');
+                    
+                    // Переходим на экран подтверждения (можно закомментировать, если не нужен)
                     showScreen('confirm');
                 });
 
@@ -638,9 +607,11 @@
                         closePanel();
                     }
                 });
+
+                updateOrderButton();
             }
 
-            // --- Функции конструктора (без изменений) ---
+            // --- Функции конструктора ---
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
                 const currentPlayer = fieldPositions.get(positionElement);
@@ -650,6 +621,9 @@
 
                 const availablePlayers = getAvailablePlayers(positionType, currentPlayer);
                 renderPlayerList(availablePlayers, positionType, currentPlayer);
+
+                // Сбрасываем прокрутку панели вверх
+                selectorPanel.scrollTop = 0;
 
                 currentPositionElement = positionElement;
                 selectorPanel.classList.add('active');
@@ -744,6 +718,7 @@
 
                 fieldPositions.set(positionElement, playerName);
                 updatePositionDisplay(positionElement, playerName);
+                updateOrderButton(); // обновляем кнопку после изменения состава
                 closePanel();
             }
 
@@ -793,6 +768,7 @@
                     pos.classList.remove('filled');
                     fieldPositions.delete(pos);
                 });
+                updateOrderButton();
                 closePanel();
             }
 
