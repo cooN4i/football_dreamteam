@@ -22,18 +22,14 @@ def webhook():
     update_json = request.get_json()
     logger.info(f"Update: {update_json}")
     
-    # Преобразуем JSON в объект Update
-    update = Update.de_json(update_json)
-    
-    # Проверяем наличие web_app_data
-    if update.message and update.message.web_app_data:
+    # Проверяем наличие web_app_data через прямой доступ к JSON
+    if 'message' in update_json and 'web_app_data' in update_json['message']:
         logger.info("📦 ЭТО WEB_APP_DATA!")
-        logger.info(f"Данные: {update.message.web_app_data.data}")
+        web_app_data = update_json['message']['web_app_data']['data']
+        logger.info(f"Данные: {web_app_data}")
         
-        # Обрабатываем данные
-        data = update.message.web_app_data.data
         try:
-            order = json.loads(data)
+            order = json.loads(web_app_data)
             logger.info(f"Распарсенный JSON: {order}")
             
             # Формируем сообщение
@@ -61,12 +57,13 @@ def webhook():
             logger.info("✅ Сообщение отправлено администратору")
             
             # Подтверждаем пользователю
-            bot.send_message(update.message.chat.id, "Спасибо! Ваш заказ принят.")
+            bot.send_message(update_json['message']['chat']['id'], "Спасибо! Ваш заказ принят.")
             
         except Exception as e:
             logger.error(f"❌ Ошибка обработки: {e}")
     
-    # Передаем обновление боту для обработки других команд
+    # Преобразуем JSON в объект Update для обработки других команд
+    update = Update.de_json(update_json)
     bot.process_new_updates([update])
     
     return jsonify({'ok': True}), 200
