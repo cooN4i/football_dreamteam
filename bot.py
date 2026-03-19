@@ -3,7 +3,7 @@ import json
 import logging
 from flask import Flask, request, jsonify
 import telebot
-from telebot.types import Update
+from telebot.types import Update, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 # ---------------- CONFIG ----------------
 TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"  # токен лучше хранить в переменных окружения
@@ -71,7 +71,14 @@ def webhook():
 # ---------------- START COMMAND ----------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Бот работает ✅")
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+
+    web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
+
+    button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
+    markup.add(button)
+
+    bot.send_message(message.chat.id, "Нажми кнопку ниже 👇", reply_markup=markup)
 
 
 # ---------------- HEALTHCHECK ----------------
