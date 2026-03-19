@@ -563,10 +563,8 @@
                 try {
                     Telegram.WebApp.sendData(realData);
             
-                    // ✅ ВАЖНО: задержка перед закрытием
-                    setTimeout(() => {
-                        Telegram.WebApp.close();
-                    }, 300);
+                    // ❗ БОЛЬШЕ НЕ ЗАКРЫВАЕМ ЗДЕСЬ
+                    // Telegram.WebApp.close();
             
                 } catch (e) {
                     alert('❌ Ошибка sendData: ' + e.message);
