@@ -472,51 +472,36 @@
 
             // 🔥 Функция отправки заказа в бота с детальными alert'ами
             function sendOrderToBot() {
-                alert('1️⃣ sendOrderToBot вызвана');
-                
-                const composition = {
-                    team: team,
-                    customer: customerData,
-                    players: []
-                };
-                alert('2️⃣ composition создан');
+                alert('5️⃣ Начинаем тестовую отправку...');
 
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-                    if (!positionDiv || !labelDiv) return;
-
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({
-                            position: labelDiv.textContent,
-                            name: playerName
-                        });
-                    }
+                // Тестовый JSON (маленький и безопасный)
+                const testData = JSON.stringify({
+                    test: true,
+                    time: Date.now(),
+                    message: "Тестовые данные"
                 });
-                alert(`3️⃣ players добавлены: ${composition.players.length} игроков`);
-
-                const jsonData = JSON.stringify(composition);
-                alert(`4️⃣ JSON готов (длина ${jsonData.length} символов):\n${jsonData.substring(0, 100)}...`);
                 
-                alert(`5️⃣ Проверка Telegram.WebApp:\nwindow.Telegram: ${window.Telegram ? 'есть' : 'нет'}\nTelegram.WebApp: ${window.Telegram?.WebApp ? 'есть' : 'нет'}`);
+                alert('5.1️⃣ Тестовые данные: ' + testData);
                 
                 if (window.Telegram && Telegram.WebApp) {
-                    alert('6️⃣ Telegram.WebApp доступен, отправляем...');
+                    alert('6️⃣ Telegram.WebApp доступен, отправляем тест...');
                     try {
-                        Telegram.WebApp.sendData(jsonData);
-                        alert('7️⃣ Данные успешно отправлены через Telegram.WebApp.sendData()!');
+                        Telegram.WebApp.sendData(testData);
+                        alert('7️⃣ Тестовые данные отправлены!');
                         
-                        // Пробуем закрыть приложение (опционально)
+                        // Если тест прошёл, попробуем отправить реальные
+                        alert('8️⃣ Пробуем отправить реальные данные...');
+                        const realData = JSON.stringify(composition);
+                        Telegram.WebApp.sendData(realData);
+                        alert('9️⃣ Реальные данные отправлены!');
+                        
                         Telegram.WebApp.close();
                     } catch (e) {
-                        alert('❌ Ошибка при отправке: ' + e.message);
+                        alert('❌ Ошибка: ' + e.message);
                     }
                 } else {
-                    alert('❌ Telegram.WebApp НЕ доступен!\nДанные НЕ отправлены.');
-                    console.log('Данные для отладки (не отправлены):', jsonData);
+                    alert('❌ Telegram.WebApp не доступен');
                 }
-            }
 
             // Переключение экранов
             function showScreen(screenName) {
