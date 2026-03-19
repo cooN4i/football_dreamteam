@@ -26,3 +26,5 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
 yarl==1.23.0
+Flask==2.3.3
+pyTelegramBotAPI==4.20.0
