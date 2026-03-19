@@ -1,54 +1,51 @@
-import asyncio
+import telebot
 import json
+import time
 import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
+import sys
 
 # Настройки
 BOT_TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
 YOUR_TELEGRAM_ID = 985380350
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
-# ✅ Включаем получение web_app_data (для старых версий, но оставим)
-dp.message.include_media_content_types = True
+def safe_send_message(chat_id, text, retries=3, delay=2):
+    for attempt in range(retries):
+        try:
+            return bot.send_message(chat_id, text)
+        except Exception as e:
+            logger.error(f"Ошибка отправки (попытка {attempt+1}): {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+    return None
 
-# 🔍 Мидлварь для логирования всех апдейтов
-@dp.update.outer_middleware()
-async def log_all_updates(handler, event, data):
-    print(f"📥 Получен апдейт: {event}")
-    return await handler(event, data)
-
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    print(f"Команда /start от пользователя {message.from_user.id}")
-    await message.answer(
+@bot.message_handler(commands=['start'])
+def handle_start(message):
+    logger.info(f"Команда /start от {message.from_user.id}")
+    bot.reply_to(
+        message,
         "Привет! Это бот для приёма заказов из мини-приложения.\n"
         "Заполни состав в приложении, нажми «Подтвердить» — данные придут сюда."
     )
 
-@dp.message()
-async def handle_web_app_data(message: types.Message):
-    print(f"🔥 Получено сообщение от {message.from_user.id}")
-    print(f"📦 Тип сообщения: {message.content_type}")
-    print(f"🧩 Есть web_app_data: {message.web_app_data is not None}")
-
-    if not message.web_app_data:
-        print("⛔ Нет web_app_data, игнорируем")
-        return
+@bot.message_handler(content_types=['web_app_data'])
+def handle_web_app_data(message):
+    logger.info("🔥 ПОЛУЧЕН WEB_APP_DATA")
+    logger.info(f"Данные: {message.web_app_data.data}")
 
     data = message.web_app_data.data
-    print(f"✅ Получены сырые данные: {data}")
-
     try:
         order = json.loads(data)
-        print(f"📊 Распарсенный JSON: {order}")
-    except json.JSONDecodeError as e:
-        print(f"❌ Ошибка парсинга JSON: {e}")
-        await message.answer("Ошибка: не удалось разобрать данные.")
+    except json.JSONDecodeError:
+        bot.reply_to(message, "Ошибка: не удалось разобрать данные.")
         return
 
     team = order.get("team", "Не указана")
@@ -67,19 +64,19 @@ async def handle_web_app_data(message: types.Message):
     for p in players:
         text += f"{p['position']}: {p['name']}\n"
 
-    print(f"📤 Отправляю заказ пользователю {YOUR_TELEGRAM_ID}")
-    try:
-        await bot.send_message(chat_id=YOUR_TELEGRAM_ID, text=text, parse_mode="Markdown")
-        print("✅ Сообщение администратору отправлено")
-    except Exception as e:
-        print(f"❌ Ошибка при отправке администратору: {e}")
+    safe_send_message(YOUR_TELEGRAM_ID, text)
+    bot.reply_to(message, "Спасибо! Ваш заказ принят.")
 
-    print(f"📤 Отправляю подтверждение пользователю {message.from_user.id}")
-    await message.answer("Спасибо! Ваш заказ принят.")
-
-async def main():
-    print("🚀 Бот запускается...")
-    await dp.start_polling(bot)
+@bot.message_handler(func=lambda message: True)
+def handle_other(message):
+    logger.debug(f"Другое сообщение: {message.content_type}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    logger.info("🚀 Бот запускается...")
+    while True:
+        try:
+            bot.polling(none_stop=True, interval=1, timeout=30)
+        except Exception as e:
+            logger.error(f"❌ Ошибка polling: {e}")
+            logger.info("Перезапуск через 5 секунд...")
+            time.sleep(5)
