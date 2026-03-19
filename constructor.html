@@ -474,6 +474,10 @@
             const orderButton = document.getElementById('orderButton');
 
             function sendOrderToBot() {
+                if (!window.Telegram || !Telegram.WebApp) {
+                    alert("❌ Telegram WebApp недоступен");
+                    return;
+                }
 
                 const composition = {
                     team: team,
@@ -499,7 +503,9 @@
             
                 if (window.Telegram && Telegram.WebApp) {
                     try {
+                        alert("🚀 sendData сейчас вызовется");
                         Telegram.WebApp.sendData(realData);
+                        alert("📤 sendData вызван");
                         Telegram.WebApp.close();
                     } catch (e) {
                         alert('❌ Ошибка sendData: ' + e.message);
