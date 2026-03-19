@@ -316,5 +316,38 @@
         "image": "лалига\\барселона\\наклейки\\rakitic1718.png"
       }
     ]
+  },
+  {
+    "name": "Торрес",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\torres2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Рафинья",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\raphinha2526.png"
+      }
+    ]
+  },
+  {
+    "name": "Решфорд",
+    "position": "НАП",
+    "variants": [
+      {
+        "season": "25/26",
+        "stock": 1,
+        "image": "лалига\\барселона\\наклейки\\rashford2526.png"
+      }
+    ]
   }
 ]

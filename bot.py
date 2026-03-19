@@ -6,11 +6,12 @@ import telebot
 from telebot.types import Update, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 # ---------------- CONFIG ----------------
-TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"  # токен лучше хранить в переменных окружения
+TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"  # лучше вынести в env
 WEBHOOK_URL = "https://football-dreamteam.onrender.com/webhook"
 
-bot = telebot.TeleBot(TOKEN)
+ADMIN_CHAT_ID = 985380350
 
+bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
 # ---------------- LOGGING ----------------
@@ -22,41 +23,64 @@ logger = logging.getLogger(__name__)
 def webhook():
     logger.info("🔥 ПОЛУЧЕН ВЕБХУК")
 
-    # ВАЖНО: silent=True чтобы не падал с 400
     update_json = request.get_json(silent=True)
 
     if not update_json:
-        logger.warning("⚠️ Пустой или невалидный JSON")
+        logger.warning("⚠️ Пустой JSON")
         return jsonify({'ok': True})
 
     logger.info(f"📩 Update: {update_json}")
 
     # ---------------- WEB APP DATA ----------------
     if 'message' in update_json and 'web_app_data' in update_json['message']:
-        logger.info("📦 ПОЛУЧЕНЫ ДАННЫЕ ИЗ WEB APP")
+        logger.info("📦 WEB APP DATA ПОЛУЧЕНЫ")
 
         try:
             raw_data = update_json['message']['web_app_data']['data']
-            logger.info(f"RAW DATA: {raw_data}")
-
             data = json.loads(raw_data)
 
             chat_id = update_json['message']['chat']['id']
 
-            # Пример обработки
+            # Ответ пользователю
             bot.send_message(chat_id, "✅ Заказ получен!")
 
-            # Можно отправить администратору
-            ADMIN_CHAT_ID = 985380350
+            # ---------------- КРАСИВОЕ ФОРМИРОВАНИЕ ----------------
+            order_id = data.get("order_id", "—")
+            team = data.get("team", "—")
+            customer = data.get("customer", {})
+            players = data.get("players", [])
 
+            customer_text = (
+                f"{customer.get('surname', '')} "
+                f"{customer.get('name', '')} "
+                f"{customer.get('patronymic', '')}"
+            ).strip()
+
+            players_text = "\n".join(
+                [f"• {p.get('position')}: {p.get('name')}" for p in players]
+            )
+
+            message_text = (
+                f"📦 <b>Новый заказ №{order_id}</b>\n\n"
+                f"⚽ <b>Команда:</b> {team}\n\n"
+                f"👤 <b>Клиент:</b>\n"
+                f"{customer_text}\n"
+                f"📞 {customer.get('phone', '—')}\n"
+                f"📍 {customer.get('address', '—')}\n\n"
+                f"🧩 <b>Состав:</b>\n"
+                f"{players_text}"
+            )
+
+            # Отправка админу
             if ADMIN_CHAT_ID:
                 bot.send_message(
                     ADMIN_CHAT_ID,
-                    f"📦 Новый заказ:\n\n{json.dumps(data, ensure_ascii=False, indent=2)}"
+                    message_text,
+                    parse_mode="HTML"
                 )
 
         except Exception as e:
-            logger.error(f"❌ Ошибка обработки web_app_data: {e}")
+            logger.error(f"❌ Ошибка обработки: {e}")
 
     # ---------------- TELEGRAM UPDATES ----------------
     try:
@@ -78,10 +102,14 @@ def start(message):
     button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
     markup.add(button)
 
-    bot.send_message(message.chat.id, "Нажми кнопку ниже 👇", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        "Нажми кнопку ниже 👇",
+        reply_markup=markup
+    )
 
 
-# ---------------- HEALTHCHECK ----------------
+# ---------------- HEALTH ----------------
 @app.route('/health', methods=['GET'])
 def health():
     return "OK", 200
@@ -98,6 +126,5 @@ def set_webhook():
 if __name__ == "__main__":
     set_webhook()
 
-    # Render требует bind на 0.0.0.0
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

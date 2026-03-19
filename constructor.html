@@ -537,18 +537,19 @@
                     alert("❌ Telegram WebApp недоступен");
                     return;
                 }
-            
+
                 const composition = {
+                    order_id: Math.floor(Math.random() * (10000 - 100 + 1)) + 100, // ✅ номер заказа
                     team: team,
                     customer: customerData,
                     players: []
                 };
-            
+
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     if (!positionDiv || !labelDiv) return;
-            
+
                     const playerName = fieldPositions.get(positionDiv);
                     if (playerName) {
                         composition.players.push({
@@ -557,15 +558,18 @@
                         });
                     }
                 });
-            
+
                 const realData = JSON.stringify(composition);
-            
+
                 try {
-                    Telegram.WebApp.sendData(realData);
-            
-                    // ❗ БОЛЬШЕ НЕ ЗАКРЫВАЕМ ЗДЕСЬ
-                    // Telegram.WebApp.close();
-            
+                    // ✅ СНАЧАЛА показываем экран успеха
+                    showScreen('confirm');
+
+                    // ✅ потом отправляем данные
+                    setTimeout(() => {
+                        Telegram.WebApp.sendData(realData);
+                    }, 300);
+
                 } catch (e) {
                     alert('❌ Ошибка sendData: ' + e.message);
                 }
