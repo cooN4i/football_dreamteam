@@ -6,7 +6,7 @@ import telebot
 from telebot.types import Update, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # 🔧 НАСТРОЙКИ
-BOT_TOKEN = "ТВОЙ_ТОКЕН_СЮДА"
+BOT_TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
 YOUR_TELEGRAM_ID = 985380350
 PORT = int(os.getenv("PORT", 8000))
 
