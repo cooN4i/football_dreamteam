@@ -49,7 +49,10 @@ def webhook():
 
             # telegram username
             tg_username = customer.get("telegram", None)
+            tg_id = customer.get("telegram_id", None)
+
             telegram_line = tg_username if tg_username else "не указан"
+            telegram_id_line = tg_id if tg_id else "не указан"
 
             # игроки
             players_text = "\n".join(
@@ -63,6 +66,7 @@ def webhook():
                 f"👤 <b>Клиент:</b>\n"
                 f"{customer_text}\n"
                 f"📱 Telegram: {telegram_line}\n"
+                f"🆔 ID: {telegram_id_line}\n"
                 f"📞 {customer.get('phone', '—')}\n"
                 f"📍 {customer.get('address', '—')}\n\n"
                 f"🧩 <b>Состав:</b>\n"
