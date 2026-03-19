@@ -470,7 +470,7 @@
 
             const orderButton = document.getElementById('orderButton');
 
-            // Функция отправки заказа в бота
+            // 🔥 Функция отправки заказа в бота с детальными alert'ами
             function sendOrderToBot() {
                 alert('1️⃣ sendOrderToBot вызвана');
                 
@@ -479,12 +479,13 @@
                     customer: customerData,
                     players: []
                 };
-            
+                alert('2️⃣ composition создан');
+
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     if (!positionDiv || !labelDiv) return;
-            
+
                     const playerName = fieldPositions.get(positionDiv);
                     if (playerName) {
                         composition.players.push({
@@ -493,16 +494,27 @@
                         });
                     }
                 });
-            
+                alert(`3️⃣ players добавлены: ${composition.players.length} игроков`);
+
                 const jsonData = JSON.stringify(composition);
-                alert('2️⃣ Данные собраны: ' + jsonData);
+                alert(`4️⃣ JSON готов (длина ${jsonData.length} символов):\n${jsonData.substring(0, 100)}...`);
+                
+                alert(`5️⃣ Проверка Telegram.WebApp:\nwindow.Telegram: ${window.Telegram ? 'есть' : 'нет'}\nTelegram.WebApp: ${window.Telegram?.WebApp ? 'есть' : 'нет'}`);
                 
                 if (window.Telegram && Telegram.WebApp) {
-                    alert('3️⃣ Telegram.WebApp доступен, отправка...');
-                    Telegram.WebApp.sendData(jsonData);
-                    alert('4️⃣ Данные отправлены!');
+                    alert('6️⃣ Telegram.WebApp доступен, отправляем...');
+                    try {
+                        Telegram.WebApp.sendData(jsonData);
+                        alert('7️⃣ Данные успешно отправлены через Telegram.WebApp.sendData()!');
+                        
+                        // Пробуем закрыть приложение (опционально)
+                        Telegram.WebApp.close();
+                    } catch (e) {
+                        alert('❌ Ошибка при отправке: ' + e.message);
+                    }
                 } else {
-                    alert('3️⃣ ОШИБКА: Telegram.WebApp не доступен');
+                    alert('❌ Telegram.WebApp НЕ доступен!\nДанные НЕ отправлены.');
+                    console.log('Данные для отладки (не отправлены):', jsonData);
                 }
             }
 
