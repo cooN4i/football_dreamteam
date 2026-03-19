@@ -3,107 +3,94 @@ import json
 import logging
 from flask import Flask, request, jsonify
 import telebot
-from telebot.types import Update, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from telebot.types import Update
 
-# 🔧 НАСТРОЙКИ
-BOT_TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
-YOUR_TELEGRAM_ID = 985380350
-PORT = int(os.getenv("PORT", 8000))
+# ---------------- CONFIG ----------------
+TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"  # токен лучше хранить в переменных окружения
+WEBHOOK_URL = "https://football-dreamteam.onrender.com/webhook"
 
-# ✅ ВОТ ТУТ ГЛАВНОЕ ИЗМЕНЕНИЕ
-WEB_APP_URL = "https://coon4i.github.io/football_dreamteam/"
+bot = telebot.TeleBot(TOKEN)
 
+app = Flask(__name__)
+
+# ---------------- LOGGING ----------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
-app = Flask(__name__)
-
-# =========================
-# 🔥 WEBHOOK
-# =========================
+# ---------------- WEBHOOK ----------------
 @app.route('/webhook', methods=['POST'])
 def webhook():
     logger.info("🔥 ПОЛУЧЕН ВЕБХУК")
 
-    update_json = request.get_json()
-    logger.info(f"Update: {update_json}")
+    # ВАЖНО: silent=True чтобы не падал с 400
+    update_json = request.get_json(silent=True)
 
+    if not update_json:
+        logger.warning("⚠️ Пустой или невалидный JSON")
+        return jsonify({'ok': True})
+
+    logger.info(f"📩 Update: {update_json}")
+
+    # ---------------- WEB APP DATA ----------------
     if 'message' in update_json and 'web_app_data' in update_json['message']:
         logger.info("📦 ПОЛУЧЕНЫ ДАННЫЕ ИЗ WEB APP")
 
-        raw_data = update_json['message']['web_app_data']['data']
-        logger.info(f"RAW DATA: {raw_data}")
-
         try:
-            order = json.loads(raw_data)
+            raw_data = update_json['message']['web_app_data']['data']
+            logger.info(f"RAW DATA: {raw_data}")
 
-            team = order.get("team", "Не указана")
-            customer = order.get("customer", {})
-            players = order.get("players", [])
-
-            text = f"🆕 *НОВЫЙ ЗАКАЗ!*\n\n"
-            text += f"*Команда:* {team}\n\n"
-
-            text += f"*Клиент:*\n"
-            text += f"Фамилия: {customer.get('surname', '')}\n"
-            text += f"Имя: {customer.get('name', '')}\n"
-            text += f"Отчество: {customer.get('patronymic', '')}\n"
-            text += f"Телефон: {customer.get('phone', '')}\n"
-            text += f"Адрес: {customer.get('address', '')}\n\n"
-
-            text += "*Состав:*\n"
-            for p in players:
-                text += f"{p['position']}: {p['name']}\n"
-
-            bot.send_message(YOUR_TELEGRAM_ID, text)
+            data = json.loads(raw_data)
 
             chat_id = update_json['message']['chat']['id']
+
+            # Пример обработки
             bot.send_message(chat_id, "✅ Заказ получен!")
 
-        except Exception as e:
-            logger.error(f"❌ Ошибка: {e}")
+            # Можно отправить администратору
+            ADMIN_CHAT_ID = 985380350
 
-    update = Update.de_json(update_json)
-    bot.process_new_updates([update])
+            if ADMIN_CHAT_ID:
+                bot.send_message(
+                    ADMIN_CHAT_ID,
+                    f"📦 Новый заказ:\n\n{json.dumps(data, ensure_ascii=False, indent=2)}"
+                )
+
+        except Exception as e:
+            logger.error(f"❌ Ошибка обработки web_app_data: {e}")
+
+    # ---------------- TELEGRAM UPDATES ----------------
+    try:
+        update = Update.de_json(update_json)
+        bot.process_new_updates([update])
+    except Exception as e:
+        logger.error(f"❌ Ошибка process_new_updates: {e}")
 
     return jsonify({'ok': True})
 
-# =========================
-# 🟢 /start
-# =========================
+
+# ---------------- START COMMAND ----------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = InlineKeyboardMarkup()
-    markup.add(
-        InlineKeyboardButton(
-            "⚽ Собрать состав",
-            web_app=WebAppInfo(WEB_APP_URL)
-        )
-    )
+    bot.send_message(message.chat.id, "Бот работает ✅")
 
-    bot.send_message(
-        message.chat.id,
-        "Нажми кнопку ниже 👇",
-        reply_markup=markup
-    )
 
-# =========================
-# ❤️ HEALTH
-# =========================
-@app.route('/health')
+# ---------------- HEALTHCHECK ----------------
+@app.route('/health', methods=['GET'])
 def health():
     return "OK", 200
 
-# =========================
-# 🚀 ЗАПУСК
-# =========================
-if __name__ == "__main__":
-    webhook_url = "https://football-dreamteam.onrender.com/webhook"
 
+# ---------------- WEBHOOK SETUP ----------------
+def set_webhook():
     bot.remove_webhook()
-    bot.set_webhook(url=webhook_url)
+    bot.set_webhook(url=WEBHOOK_URL)
+    logger.info("✅ Webhook установлен")
 
-    logger.info("✅ Вебхук установлен")
 
-    app.run(host='0.0.0.0', port=PORT)
+# ---------------- MAIN ----------------
+if __name__ == "__main__":
+    set_webhook()
+
+    # Render требует bind на 0.0.0.0
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
