@@ -45,15 +45,20 @@
 
         /* Поле */
         .field {
-            background: #1a7f3d;
-            aspect-ratio: 2 / 3;
+            width: 100%;
             max-width: 500px;
+            height: auto;
+            aspect-ratio: 3 / 5;
+            max-height: 70vh;
+
             margin: 0 auto 20px;
             border-radius: 24px;
             position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            border: 3px solid #0a4d24;
             padding: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .positions-grid {
             width: 100%;
@@ -65,18 +70,18 @@
         .line {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            gap: clamp(4px, 2vw, 12px);
+            flex-wrap: nowrap;
         }
         .position-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 70px;
+            width: clamp(50px, 12vw, 80px);
         }
         .position {
-            width: 70px;
-            height: 100px;
+            width: 100%;
+            aspect-ratio: 2 / 3;
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 8px;
@@ -306,6 +311,9 @@
             max-width: 400px;
             margin: 20px auto;
         }
+        #constructorScreen {
+            padding-bottom: 120px;
+        }
     </style>
 </head>
 <body>
@@ -490,6 +498,7 @@
                 const reviewContent = document.getElementById('reviewContent');
             
                 const composition = {
+                    order_id: customerData.order_id,
                     team: team,
                     customer: customerData,
                     players: []
@@ -539,7 +548,7 @@
                 }
 
                 const composition = {
-                    order_id: Math.floor(Math.random() * (10000 - 100 + 1)) + 100, // ✅ номер заказа
+                    order_id: customerData.order_id,
                     team: team,
                     customer: customerData,
                     players: []
@@ -721,7 +730,10 @@
 
                 closeSelector.addEventListener('click', closePanel);
                 document.getElementById('clearButton').addEventListener('click', clearField);
-                orderButton.addEventListener('click', () => showScreen('form'));
+                orderButton.addEventListener('click', () => {
+                    if (!isTeamComplete()) return;
+                    showScreen('form');
+                });
 
                 // Навигация
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
@@ -754,7 +766,7 @@
                     customerData.patronymic = document.getElementById('patronymic').value.trim();
                     customerData.phone = iti.getNumber();
                     customerData.address = document.getElementById('address').value.trim();
-                
+                    customerData.order_id = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
                     showReviewScreen();
                 });
 
