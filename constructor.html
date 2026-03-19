@@ -471,9 +471,10 @@
             const orderButton = document.getElementById('orderButton');
 
             // 🔥 Функция отправки заказа в бота с детальными alert'ами
+            // 🔥 Функция отправки заказа в бота с детальными alert'ами
             function sendOrderToBot() {
                 alert('5️⃣ Начинаем тестовую отправку...');
-
+            
                 // Тестовый JSON (маленький и безопасный)
                 const testData = JSON.stringify({
                     test: true,
@@ -489,13 +490,41 @@
                         Telegram.WebApp.sendData(testData);
                         alert('7️⃣ Тестовые данные отправлены!');
                         
-                        // Если тест прошёл, попробуем отправить реальные
-                        alert('8️⃣ Пробуем отправить реальные данные...');
+                        // ⚠️ ВАЖНО: сначала СОБИРАЕМ composition, потом используем
+                        alert('8️⃣ Собираем реальные данные...');
+                        
+                        const composition = {
+                            team: team,
+                            customer: customerData,
+                            players: []
+                        };
+            
+                        positionWrappers.forEach(wrapper => {
+                            const positionDiv = wrapper.querySelector('.position');
+                            const labelDiv = wrapper.querySelector('.position-label');
+                            if (!positionDiv || !labelDiv) return;
+            
+                            const playerName = fieldPositions.get(positionDiv);
+                            if (playerName) {
+                                composition.players.push({
+                                    position: labelDiv.textContent,
+                                    name: playerName
+                                });
+                            }
+                        });
+                        
+                        alert(`8.1️⃣ Собрано игроков: ${composition.players.length}`);
+                        
                         const realData = JSON.stringify(composition);
+                        alert(`8.2️⃣ Реальные данные (длина ${realData.length}): ${realData.substring(0, 100)}...`);
+                        
+                        // Отправляем реальные данные
                         Telegram.WebApp.sendData(realData);
                         alert('9️⃣ Реальные данные отправлены!');
                         
+                        // Закрываем приложение
                         Telegram.WebApp.close();
+                        
                     } catch (e) {
                         alert('❌ Ошибка: ' + e.message);
                     }
