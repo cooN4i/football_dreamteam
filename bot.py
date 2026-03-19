@@ -1,32 +1,40 @@
-import telebot
+import os
 import json
-import time
 import logging
-import sys
+import asyncio
+from flask import Flask, request, jsonify
+import telebot
+from telebot.types import Update
 
 # Настройки
 BOT_TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
 YOUR_TELEGRAM_ID = 985380350
+PORT = int(os.getenv("PORT", 8000))
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
-)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
+app = Flask(__name__)
 
-def safe_send_message(chat_id, text, retries=3, delay=2):
-    for attempt in range(retries):
-        try:
-            return bot.send_message(chat_id, text)
-        except Exception as e:
-            logger.error(f"Ошибка отправки (попытка {attempt+1}): {e}")
-            if attempt < retries - 1:
-                time.sleep(delay)
-    return None
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    logger.info("🔥 Получен вебхук")
+    update = request.get_json()
+    logger.info(f"Update: {update}")
+    
+    # Передаём обновление боту
+    update = Update.de_json(update)
+    bot.process_new_updates([update])
+    
+    return jsonify({'ok': True}), 200
 
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check для Render"""
+    return 'OK', 200
+
+# Обработчики команд
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     logger.info(f"Команда /start от {message.from_user.id}")
@@ -64,7 +72,7 @@ def handle_web_app_data(message):
     for p in players:
         text += f"{p['position']}: {p['name']}\n"
 
-    safe_send_message(YOUR_TELEGRAM_ID, text)
+    bot.send_message(YOUR_TELEGRAM_ID, text)
     bot.reply_to(message, "Спасибо! Ваш заказ принят.")
 
 @bot.message_handler(func=lambda message: True)
@@ -72,11 +80,11 @@ def handle_other(message):
     logger.debug(f"Другое сообщение: {message.content_type}")
 
 if __name__ == "__main__":
-    logger.info("🚀 Бот запускается...")
-    while True:
-        try:
-            bot.polling(none_stop=True, interval=1, timeout=30)
-        except Exception as e:
-            logger.error(f"❌ Ошибка polling: {e}")
-            logger.info("Перезапуск через 5 секунд...")
-            time.sleep(5)
+    # Устанавливаем вебхук при запуске
+    webhook_url = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME', 'localhost')}/webhook"
+    bot.remove_webhook()
+    bot.set_webhook(url=webhook_url)
+    logger.info(f"Вебхук установлен на {webhook_url}")
+    
+    # Запускаем Flask-сервер
+    app.run(host='0.0.0.0', port=PORT)
