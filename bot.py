@@ -10,7 +10,8 @@ BOT_TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
 YOUR_TELEGRAM_ID = 985380350
 PORT = int(os.getenv("PORT", 8000))
 
-WEB_APP_URL = "https://football-dreamteam.onrender.com/index.html"
+# ✅ ВОТ ТУТ ГЛАВНОЕ ИЗМЕНЕНИЕ
+WEB_APP_URL = "https://coon4i.github.io/football_dreamteam/"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,7 +29,6 @@ def webhook():
     update_json = request.get_json()
     logger.info(f"Update: {update_json}")
 
-    # 👉 ЛОВИМ WEB APP DATA
     if 'message' in update_json and 'web_app_data' in update_json['message']:
         logger.info("📦 ПОЛУЧЕНЫ ДАННЫЕ ИЗ WEB APP")
 
@@ -42,7 +42,6 @@ def webhook():
             customer = order.get("customer", {})
             players = order.get("players", [])
 
-            # 📩 Формируем сообщение
             text = f"🆕 *НОВЫЙ ЗАКАЗ!*\n\n"
             text += f"*Команда:* {team}\n\n"
 
@@ -57,53 +56,44 @@ def webhook():
             for p in players:
                 text += f"{p['position']}: {p['name']}\n"
 
-            # 📤 Отправляем тебе
             bot.send_message(YOUR_TELEGRAM_ID, text)
-            logger.info("✅ Отправлено администратору")
 
-            # 📤 Ответ пользователю
             chat_id = update_json['message']['chat']['id']
-            bot.send_message(chat_id, "✅ Заказ получен! Спасибо!")
+            bot.send_message(chat_id, "✅ Заказ получен!")
 
         except Exception as e:
-            logger.error(f"❌ Ошибка обработки JSON: {e}")
+            logger.error(f"❌ Ошибка: {e}")
 
-    # 👉 Обрабатываем остальные апдейты
     update = Update.de_json(update_json)
     bot.process_new_updates([update])
 
     return jsonify({'ok': True})
 
-
 # =========================
-# 🟢 /start С КНОПКОЙ
+# 🟢 /start
 # =========================
 @bot.message_handler(commands=['start'])
 def start(message):
-    logger.info(f"/start от {message.from_user.id}")
-
     markup = InlineKeyboardMarkup()
     markup.add(
         InlineKeyboardButton(
-            text="⚽ Собрать состав",
+            "⚽ Собрать состав",
             web_app=WebAppInfo(WEB_APP_URL)
         )
     )
 
     bot.send_message(
         message.chat.id,
-        "Собери свой состав мечты 👇",
+        "Нажми кнопку ниже 👇",
         reply_markup=markup
     )
 
-
 # =========================
-# 🔍 HEALTH CHECK
+# ❤️ HEALTH
 # =========================
-@app.route('/health', methods=['GET'])
+@app.route('/health')
 def health():
-    return 'OK', 200
-
+    return "OK", 200
 
 # =========================
 # 🚀 ЗАПУСК
@@ -114,6 +104,6 @@ if __name__ == "__main__":
     bot.remove_webhook()
     bot.set_webhook(url=webhook_url)
 
-    logger.info(f"✅ Вебхук установлен: {webhook_url}")
+    logger.info("✅ Вебхук установлен")
 
     app.run(host='0.0.0.0', port=PORT)
