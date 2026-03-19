@@ -437,6 +437,9 @@
 
     <script>
         (function() {
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+            }
             const urlParams = new URLSearchParams(window.location.search);
             let team = urlParams.get('team') || 'Барселона';
             document.getElementById('team-title').textContent = `Состав ${team}`;
@@ -470,63 +473,36 @@
 
             const orderButton = document.getElementById('orderButton');
 
-            // 🔥 Функция отправки заказа в бота с детальными alert'ами
-            // 🔥 Функция отправки заказа в бота с детальными alert'ами
             function sendOrderToBot() {
-                alert('5️⃣ Начинаем тестовую отправку...');
+
+                const composition = {
+                    team: team,
+                    customer: customerData,
+                    players: []
+                };
             
-                // Тестовый JSON (маленький и безопасный)
-                const testData = JSON.stringify({
-                    test: true,
-                    time: Date.now(),
-                    message: "Тестовые данные"
-                });
-                
-                alert('5.1️⃣ Тестовые данные: ' + testData);
-                
-                if (window.Telegram && Telegram.WebApp) {
-                    alert('6️⃣ Telegram.WebApp доступен, отправляем тест...');
-                    try {
-                        Telegram.WebApp.sendData(testData);
-                        alert('7️⃣ Тестовые данные отправлены!');
-                        
-                        // ⚠️ ВАЖНО: сначала СОБИРАЕМ composition, потом используем
-                        alert('8️⃣ Собираем реальные данные...');
-                        
-                        const composition = {
-                            team: team,
-                            customer: customerData,
-                            players: []
-                        };
+                positionWrappers.forEach(wrapper => {
+                    const positionDiv = wrapper.querySelector('.position');
+                    const labelDiv = wrapper.querySelector('.position-label');
+                    if (!positionDiv || !labelDiv) return;
             
-                        positionWrappers.forEach(wrapper => {
-                            const positionDiv = wrapper.querySelector('.position');
-                            const labelDiv = wrapper.querySelector('.position-label');
-                            if (!positionDiv || !labelDiv) return;
-            
-                            const playerName = fieldPositions.get(positionDiv);
-                            if (playerName) {
-                                composition.players.push({
-                                    position: labelDiv.textContent,
-                                    name: playerName
-                                });
-                            }
+                    const playerName = fieldPositions.get(positionDiv);
+                    if (playerName) {
+                        composition.players.push({
+                            position: labelDiv.textContent,
+                            name: playerName
                         });
-                        
-                        alert(`8.1️⃣ Собрано игроков: ${composition.players.length}`);
-                        
-                        const realData = JSON.stringify(composition);
-                        alert(`8.2️⃣ Реальные данные (длина ${realData.length}): ${realData.substring(0, 100)}...`);
-                        
-                        // Отправляем реальные данные
+                    }
+                });
+            
+                const realData = JSON.stringify(composition);
+            
+                if (window.Telegram && Telegram.WebApp) {
+                    try {
                         Telegram.WebApp.sendData(realData);
-                        alert('9️⃣ Реальные данные отправлены!');
-                        
-                        // Закрываем приложение
                         Telegram.WebApp.close();
-                        
                     } catch (e) {
-                        alert('❌ Ошибка: ' + e.message);
+                        alert('❌ Ошибка sendData: ' + e.message);
                     }
                 } else {
                     alert('❌ Telegram.WebApp не доступен');
