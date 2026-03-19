@@ -50,7 +50,7 @@
             height: auto;
             aspect-ratio: 3 / 5;
             max-height: 70vh;
-
+            background: #2e7d32;
             margin: 0 auto 20px;
             border-radius: 24px;
             position: relative;
@@ -77,9 +77,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: clamp(50px, 12vw, 80px);
+            width: clamp(70px, 14vw, 110px);
         }
         .position {
+            min-height: 90px;
             width: 100%;
             aspect-ratio: 2 / 3;
             background: rgba(255, 255, 255, 0.2);
@@ -547,19 +548,27 @@
                     return;
                 }
 
+                const tgUser = Telegram.WebApp.initDataUnsafe?.user;
+
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
-                    customer: customerData,
+                    customer: {
+                        ...customerData,
+                        telegram: tgUser?.username ? '@' + tgUser.username : null,
+                        telegram_id: tgUser?.id || null
+                    },
                     players: []
                 };
 
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
+
                     if (!positionDiv || !labelDiv) return;
 
                     const playerName = fieldPositions.get(positionDiv);
+
                     if (playerName) {
                         composition.players.push({
                             position: labelDiv.textContent,
@@ -571,10 +580,8 @@
                 const realData = JSON.stringify(composition);
 
                 try {
-                    // ✅ СНАЧАЛА показываем экран успеха
                     showScreen('confirm');
 
-                    // ✅ потом отправляем данные
                     setTimeout(() => {
                         Telegram.WebApp.sendData(realData);
                     }, 300);

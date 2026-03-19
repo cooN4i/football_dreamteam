@@ -8,7 +8,6 @@ from telebot.types import Update, ReplyKeyboardMarkup, KeyboardButton, WebAppInf
 # ---------------- CONFIG ----------------
 TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
 WEBHOOK_URL = "https://football-dreamteam.onrender.com/webhook"
-
 ADMIN_CHAT_ID = 985380350
 
 bot = telebot.TeleBot(TOKEN)
@@ -19,8 +18,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ---------------- WEBHOOK ----------------
-
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     logger.info("🔥 WEBHOOK RECEIVED")
@@ -30,7 +27,7 @@ def webhook():
     if not update_json:
         return jsonify({'ok': True})
 
-    # ---------------- WEB APP DATA ----------------
+    # -------- WEBAPP DATA --------
     if 'message' in update_json and 'web_app_data' in update_json['message']:
         try:
             raw_data = update_json['message']['web_app_data']['data']
@@ -43,12 +40,16 @@ def webhook():
             customer = data.get("customer", {})
             players = data.get("players", [])
 
-            # имя клиента
+            # клиент
             customer_text = (
                 f"{customer.get('surname', '')} "
                 f"{customer.get('name', '')} "
                 f"{customer.get('patronymic', '')}"
             ).strip()
+
+            # telegram username
+            tg_username = customer.get("telegram", None)
+            telegram_line = tg_username if tg_username else "не указан"
 
             # игроки
             players_text = "\n".join(
@@ -61,12 +62,14 @@ def webhook():
                 f"⚽ <b>Команда:</b> {team}\n\n"
                 f"👤 <b>Клиент:</b>\n"
                 f"{customer_text}\n"
+                f"📱 Telegram: {telegram_line}\n"
                 f"📞 {customer.get('phone', '—')}\n"
                 f"📍 {customer.get('address', '—')}\n\n"
                 f"🧩 <b>Состав:</b>\n"
                 f"{players_text}"
             )
 
+            # отправка админу
             if ADMIN_CHAT_ID:
                 bot.send_message(
                     ADMIN_CHAT_ID,
@@ -74,7 +77,7 @@ def webhook():
                     parse_mode="HTML"
                 )
 
-            # ✅ сообщение пользователю
+            # отправка пользователю
             bot.send_message(
                 chat_id,
                 f"✅ <b>Спасибо за заказ!</b>\n\n"
