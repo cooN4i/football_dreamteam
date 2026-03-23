@@ -32,6 +32,7 @@ def webhook():
     logger.info("🔥 WEBHOOK RECEIVED")
 
     update_json = request.get_json(silent=True)
+    logger.info(f"Full update_json: {update_json}")
 
     if not update_json:
         return jsonify({'ok': True})
@@ -40,6 +41,7 @@ def webhook():
     if 'message' in update_json and 'web_app_data' in update_json['message']:
         try:
             raw_data = update_json['message']['web_app_data']['data']
+            logger.info(f"Received web_app_data: {raw_data}")
             data = json.loads(raw_data)
 
             chat_id = update_json['message']['chat']['id']
@@ -84,11 +86,15 @@ def webhook():
 
             # отправка админу
             if ADMIN_CHAT_ID:
-                bot.send_message(
-                    ADMIN_CHAT_ID,
-                    admin_message,
-                    parse_mode="HTML"
-                )
+                try:
+                    bot.send_message(
+                        ADMIN_CHAT_ID,
+                        admin_message,
+                        parse_mode="HTML"
+                    )
+                    logger.info("Message sent to admin")
+                except Exception as e:
+                    logger.error(f"Failed to send to admin: {e}")
 
             # отправка пользователю
             markup = InlineKeyboardMarkup()
@@ -96,18 +102,21 @@ def webhook():
                 InlineKeyboardButton(
                     "📩 Написать в поддержку", url="https://t.me/kylo_gg")
             )
-
-            bot.send_message(
-                chat_id,
-                f"✅ <b>Спасибо за заказ!</b>\n\n"
-                f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
-                f"📝 Если есть вопросы - напишите нам.",
-                parse_mode="HTML",
-                reply_markup=markup
-            )
+            try:
+                bot.send_message(
+                    chat_id,
+                    f"✅ <b>Спасибо за заказ!</b>\n\n"
+                    f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
+                    f"📝 Если есть вопросы - напишите нам.",
+                    parse_mode="HTML",
+                    reply_markup=markup
+                )
+                logger.info("Message sent to user")
+            except Exception as e:
+                logger.error(f"Failed to send to user: {e}")
 
         except Exception as e:
-            logger.error(f"❌ Error: {e}")
+            logger.error(f"❌ Error processing web_app_data: {e}")
 
     # обработка обычных апдейтов
     try:

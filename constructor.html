@@ -609,7 +609,12 @@
 
                 try {
                     Telegram.WebApp.sendData(realData);
-                    Telegram.WebApp.close(); // принудительное закрытие
+                    // Переходим на экран подтверждения
+                    showScreen('confirm');
+                    // Закрываем приложение через 0.5 секунды, чтобы данные точно отправились
+                    setTimeout(() => {
+                        Telegram.WebApp.close();
+                    }, 500);
                 } catch (e) {
                     alert('❌ Ошибка sendData: ' + e.message);
                 }
@@ -770,7 +775,9 @@
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
-                document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
+                document.getElementById('finishButton').addEventListener('click', () => {
+                    Telegram.WebApp.close();
+                });
                 document.getElementById('editOrder').addEventListener('click', () => {
                     showScreen('form');
                 });
