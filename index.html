@@ -2,548 +2,65 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Состав мечты</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f0f2f5; }
-        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; width: 100%; max-width: 500px; margin: 0 auto; }
-        .team-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; font-weight: bold; font-size: 1.2rem; }
-        .team-card:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .team-card:active { transform: scale(0.98); }
-        .back-button { display: inline-block; margin-bottom: 16px; padding: 8px 16px; background: #ddd; border-radius: 20px; text-decoration: none; color: black; font-weight: 500; cursor: pointer; }
-        h2 { margin-top: 0; }
-        .field { width: 100%; max-width: 500px; margin: 0 auto 20px; border-radius: 24px; background: #2e7d32; padding: 12px; overflow: hidden; }
-        .positions-grid { display: flex; flex-direction: column; gap: 10px; }
-        .line { display: flex; justify-content: center; gap: clamp(4px, 2vw, 12px); flex-wrap: nowrap; }
-        .position-wrapper { display: flex; flex-direction: column; align-items: center; width: clamp(60px, 16vw, 90px); }
-        .position { min-height: 90px; width: 100%; aspect-ratio: 2 / 3; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; user-select: none; }
-        .position.filled { border-color: white; }
-        .position img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        .position .player-name { position: absolute; bottom: 4px; left: 0; right: 0; background: rgba(255,255,255,0.7); padding: 3px; border-radius: 4px; z-index: 2; font-weight: bold; font-size: 10px; text-align: center; pointer-events: none; line-height: 1.2; }
-        .position-label { margin-top: 4px; font-size: 12px; font-weight: bold; color: #333; text-align: center; }
-        .selector-panel { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2); padding: 16px; max-height: 60vh; overflow-y: auto; z-index: 1000; }
-        .selector-panel.active { display: block; }
-        .selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .close-button { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0 8px; }
-        .players-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-        .player-option { width: 70px; height: 100px; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; position: relative; overflow: hidden; background-color: #f0f0f0; transition: transform 0.1s; }
-        .player-option:active { transform: scale(0.98); }
-        .player-option img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
-        .player-option .player-name { position: absolute; bottom: 4px; left: 0; right: 0; background: rgba(255,255,255,0.7); padding: 3px; border-radius: 4px; z-index: 2; font-weight: bold; font-size: 10px; text-align: center; line-height: 1.2; }
-        .separator { width: 100%; text-align: center; font-weight: bold; color: #666; margin: 8px 0; }
-        .form-container { background: white; border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; user-select: text; }
-        .iti { width: 100%; }
-        .form-note { font-size: 12px; color: #666; margin-top: 4px; font-style: italic; }
-        .error-message { color: #dc3545; font-size: 14px; margin-top: 4px; display: none; }
-        .error-message.visible { display: block; }
-        .button-group { display: flex; justify-content: center; gap: 10px; margin: 20px auto 0; flex-wrap: wrap; }
-        .action-button { padding: 10px 24px; border: none; border-radius: 30px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-        .clear-button { background: #dc3545; color: white; }
-        .clear-button:hover { background: #c82333; }
-        .order-button { background: #28a745; color: white; }
-        .order-button:hover { background: #218838; }
-        .secondary-button { background: #6c757d; color: white; }
-        .secondary-button:hover { background: #5a6268; }
-        .screen { display: none; }
-        .screen.active { display: block; }
-        .success-message { background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; }
-        #constructorScreen { padding-bottom: 120px; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .team-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .team-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .team-card:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- экран выбора команды -->
-        <div id="teamSelectScreen" class="screen active">
-            <h1 style="text-align: center;">Выбери команду</h1>
-            <div class="team-grid" id="teamGrid">
-                <div class="team-card" data-team="Барселона">Барселона</div>
-                <!-- другие команды -->
-            </div>
-        </div>
-
-        <!-- экран конструктора -->
-        <div id="constructorScreen" class="screen">
-            <div class="back-button" id="backToTeams">← Назад к командам</div>
-            <h2 id="team-title">Загрузка...</h2>
-            <div class="field" id="field">
-                <div class="positions-grid" id="positionsGrid">
-                    <div class="line">
-                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">LW</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">ST</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">RW</div></div>
-                    </div>
-                    <div class="line">
-                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
-                    </div>
-                    <div class="line">
-                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">LB</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">CB</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">CB</div></div>
-                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">RB</div></div>
-                    </div>
-                    <div class="line">
-                        <div class="position-wrapper"><div class="position" data-position="GK"></div><div class="position-label">GK</div></div>
-                    </div>
-                </div>
-            </div>
-            <div class="selector-panel" id="selectorPanel">
-                <div class="selector-header">
-                    <h3 id="selectorTitle">Выберите игрока</h3>
-                    <button class="close-button" id="closeSelector">&times;</button>
-                </div>
-                <div class="players-list" id="playersList"></div>
-            </div>
-            <div class="button-group">
-                <button class="action-button clear-button" id="clearButton">Очистить состав</button>
-                <button class="action-button order-button" id="orderButton" style="display: none;">Подтвердить</button>
-            </div>
-        </div>
-
-        <!-- экран формы -->
-        <div id="formScreen" class="screen">
-            <button class="back-button" id="backToConstructor">← Назад к составу</button>
-            <h2>Контактные данные</h2>
-            <div class="form-container">
-                <div class="form-group">
-                    <label for="surname">Фамилия</label>
-                    <input type="text" id="surname" placeholder="Иванов">
-                    <div id="surnameError" class="error-message">Введите фамилию</div>
-                </div>
-                <div class="form-group">
-                    <label for="name">Имя</label>
-                    <input type="text" id="name" placeholder="Иван">
-                    <div id="nameError" class="error-message">Введите имя</div>
-                </div>
-                <div class="form-group">
-                    <label for="patronymic">Отчество</label>
-                    <input type="text" id="patronymic" placeholder="Иванович (при наличии)">
-                </div>
-                <div class="form-group">
-                    <label for="phone">Номер телефона</label>
-                    <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
-                    <div id="phoneError" class="error-message">Неверный номер телефона</div>
-                </div>
-                <div class="form-group">
-                    <label for="address">Адрес ПВЗ СДЕК для получения</label>
-                    <input type="text" id="address" placeholder="Начните вводить адрес..." autocomplete="off">
-                    <div class="form-note">*При отсутствии ПВЗ на выбранном адресе будет выбран ближайший</div>
-                    <div id="addressError" class="error-message">Введите корректный адрес</div>
-                </div>
-                <div class="button-group">
-                    <button class="action-button secondary-button" id="backFromForm">Назад</button>
-                    <button class="action-button order-button" id="nextToConfirm">Далее</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- экран проверки -->
-        <div id="reviewScreen" class="screen">
-            <button class="back-button" id="backToFormFromReview">← Назад</button>
-            <div class="form-container">
-                <h2>Проверьте заказ</h2>
-                <div id="reviewContent"></div>
-                <div class="button-group">
-                    <button class="action-button secondary-button" id="editOrder">Редактировать</button>
-                    <button class="action-button order-button" id="confirmOrder">Подтвердить</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- экран успеха -->
-        <div id="confirmScreen" class="screen">
-            <div class="success-message">
-                <h2>Заказ отправлен!</h2>
-                <p>Спасибо, ваш заказ принят. Мы свяжемся с вами в ближайшее время.</p>
-                <button class="action-button order-button" id="finishButton">Готово</button>
-            </div>
-        </div>
+    <h1 style="margin-bottom: 24px;">Выбери команду</h1>
+    <div class="team-grid">
+        <div class="team-card" data-team="Барселона">Барселона</div>
+        <!-- Сюда добавишь позже: Реал Мадрид, и т.д. -->
     </div>
 
     <script>
-        (function() {
-            // === УЛУЧШЕННОЕ ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ TELGRAM ===
-            let tgUser = null;
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                console.log("Telegram WebApp ready");
-
-                // 1. Пытаемся получить из initDataUnsafe
-                const initDataUnsafe = Telegram.WebApp.initDataUnsafe;
-                if (initDataUnsafe?.user) {
-                    tgUser = initDataUnsafe.user;
-                    console.log("User from initDataUnsafe:", tgUser);
-                }
-                // 2. Если нет, парсим из initData строки
-                if (!tgUser && Telegram.WebApp.initData) {
-                    const params = new URLSearchParams(Telegram.WebApp.initData);
-                    const userStr = params.get('user');
-                    if (userStr) {
-                        try {
-                            tgUser = JSON.parse(decodeURIComponent(userStr));
-                            console.log("User parsed from initData:", tgUser);
-                        } catch(e) {}
-                    }
-                }
-                if (!tgUser) {
-                    console.warn("⚠️ User data is missing! Check if opened via Telegram bot button.");
-                }
-            } else {
-                console.error("❌ Telegram WebApp not available");
-            }
-
-            window.savedTelegramUser = tgUser;
-
-            // DOM элементы
-            const teamSelectScreen = document.getElementById('teamSelectScreen');
-            const constructorScreen = document.getElementById('constructorScreen');
-            const formScreen = document.getElementById('formScreen');
-            const reviewScreen = document.getElementById('reviewScreen');
-            const confirmScreen = document.getElementById('confirmScreen');
-            const teamTitle = document.getElementById('team-title');
-            const teamGrid = document.getElementById('teamGrid');
-            const backToTeams = document.getElementById('backToTeams');
-
-            let playersData = [];
-            let fieldPositions = new Map();
-            let currentTeam = null;
-            let customerData = { surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null };
-            let iti = null;
-
-            function showScreen(screenName) {
-                teamSelectScreen.classList.remove('active');
-                constructorScreen.classList.remove('active');
-                formScreen.classList.remove('active');
-                reviewScreen.classList.remove('active');
-                confirmScreen.classList.remove('active');
-                if (screenName === 'teamSelect') teamSelectScreen.classList.add('active');
-                else if (screenName === 'constructor') constructorScreen.classList.add('active');
-                else if (screenName === 'form') formScreen.classList.add('active');
-                else if (screenName === 'review') reviewScreen.classList.add('active');
-                else if (screenName === 'confirm') confirmScreen.classList.add('active');
-            }
-
-            async function loadTeamData(team) {
-                const jsonFileName = team.toLowerCase() + '.json';
-                try {
-                    const response = await fetch(jsonFileName);
-                    if (!response.ok) throw new Error(`Файл ${jsonFileName} не найден`);
-                    playersData = await response.json();
-                    currentTeam = team;
-                    teamTitle.textContent = `Состав ${team}`;
-                    clearField();
-                    showScreen('constructor');
-                } catch (error) {
-                    alert(`Ошибка загрузки данных: ${error.message}`);
-                    console.error(error);
-                }
-            }
-
-            teamGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.team-card');
-                if (!card) return;
+        const cards = document.querySelectorAll('.team-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
                 const team = card.dataset.team;
-                if (team) loadTeamData(team);
+                // Переходим на страницу конструктора, передавая название команды в URL
+                window.location.href = `constructor.html?team=${encodeURIComponent(team)}`;
             });
-            backToTeams.addEventListener('click', () => showScreen('teamSelect'));
-
-            // === КОД КОНСТРУКТОРА (без изменений) ===
-            const positions = document.querySelectorAll('.position');
-            const positionWrappers = document.querySelectorAll('.position-wrapper');
-            const selectorPanel = document.getElementById('selectorPanel');
-            const playersList = document.getElementById('playersList');
-            const selectorTitle = document.getElementById('selectorTitle');
-            const closeSelector = document.getElementById('closeSelector');
-            const orderButton = document.getElementById('orderButton');
-            const clearButton = document.getElementById('clearButton');
-
-            let currentPositionElement = null;
-
-            function isTeamComplete() { return fieldPositions.size === 11; }
-            function updateOrderButtonVisibility() { orderButton.style.display = isTeamComplete() ? 'inline-block' : 'none'; }
-
-            function getAvailablePlayers(positionType, currentPlayerName) {
-                let rusPosition = '';
-                if (positionType === 'GK') rusPosition = 'ВРТ';
-                else if (positionType === 'DEF') rusPosition = 'ЗАЩ';
-                else if (positionType === 'MID') rusPosition = 'ПЗЩ';
-                else if (positionType === 'FWD') rusPosition = 'НАП';
-
-                const occupiedPlayers = new Set();
-                for (let [pos, name] of fieldPositions.entries()) {
-                    if (pos !== currentPositionElement) occupiedPlayers.add(name);
-                }
-                let allFree = playersData.filter(p => !occupiedPlayers.has(p.name));
-                if (rusPosition === 'ВРТ') return { same: allFree.filter(p => p.position === 'ВРТ'), other: [] };
-                const samePos = allFree.filter(p => p.position === rusPosition);
-                const otherPos = allFree.filter(p => p.position !== rusPosition && p.position !== 'ВРТ');
-                return { same: samePos, other: otherPos };
-            }
-
-            function createPlayerOption(player) {
-                const variant = player.variants[0];
-                let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
-                const div = document.createElement('div');
-                div.className = 'player-option';
-                div.dataset.name = player.name;
-                const img = document.createElement('img');
-                img.src = imagePath;
-                img.alt = player.name;
-                img.onerror = () => { img.style.display = 'none'; div.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'player-name';
-                nameSpan.textContent = player.name;
-                div.appendChild(img);
-                div.appendChild(nameSpan);
-                div.addEventListener('click', () => selectPlayer(player.name, currentPositionElement));
-                return div;
-            }
-
-            function renderPlayerList(available, positionType, currentPlayerName) {
-                playersList.innerHTML = '';
-                if (positionType === 'GK') {
-                    available.same.forEach(player => playersList.appendChild(createPlayerOption(player)));
-                } else {
-                    available.same.forEach(player => playersList.appendChild(createPlayerOption(player)));
-                    if (available.same.length > 0 && available.other.length > 0) {
-                        const separator = document.createElement('div');
-                        separator.className = 'separator';
-                        separator.textContent = 'Другие позиции';
-                        playersList.appendChild(separator);
-                    }
-                    available.other.forEach(player => playersList.appendChild(createPlayerOption(player)));
-                }
-            }
-
-            function openSelector(positionElement) {
-                const positionType = positionElement.dataset.position;
-                const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
-                selectorTitle.textContent = `Выберите ${positionNames[positionType]}`;
-                const available = getAvailablePlayers(positionType);
-                renderPlayerList(available, positionType);
-                currentPositionElement = positionElement;
-                selectorPanel.classList.add('active');
-            }
-
-            function selectPlayer(playerName, positionElement) {
-                if (fieldPositions.has(positionElement)) fieldPositions.delete(positionElement);
-                fieldPositions.set(positionElement, playerName);
-                updatePositionDisplay(positionElement, playerName);
-                updateOrderButtonVisibility();
-                closePanel();
-            }
-
-            function updatePositionDisplay(positionElement, playerName) {
-                const player = playersData.find(p => p.name === playerName);
-                if (!player) return;
-                const variant = player.variants[0];
-                let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
-                const oldImg = positionElement.querySelector('img');
-                if (oldImg) oldImg.remove();
-                const oldName = positionElement.querySelector('.player-name');
-                if (oldName) oldName.remove();
-                const img = document.createElement('img');
-                img.src = imagePath;
-                img.alt = playerName;
-                img.onerror = () => { img.style.display = 'none'; positionElement.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'player-name';
-                nameSpan.textContent = playerName;
-                positionElement.appendChild(img);
-                positionElement.appendChild(nameSpan);
-                positionElement.classList.add('filled');
-            }
-
-            function closePanel() { selectorPanel.classList.remove('active'); currentPositionElement = null; }
-            function clearField() {
-                positions.forEach(pos => {
-                    const img = pos.querySelector('img');
-                    if (img) img.remove();
-                    const nameSpan = pos.querySelector('.player-name');
-                    if (nameSpan) nameSpan.remove();
-                    pos.classList.remove('filled');
-                    fieldPositions.delete(pos);
-                });
-                updateOrderButtonVisibility();
-                closePanel();
-            }
-
-            positions.forEach(pos => pos.addEventListener('click', () => openSelector(pos)));
-            closeSelector.addEventListener('click', closePanel);
-            clearButton.addEventListener('click', clearField);
-            orderButton.addEventListener('click', () => { if (isTeamComplete()) showScreen('form'); });
-
-            // === ФОРМА ===
-            function initDaData() {
-                if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
-                    $("#address").suggestions({
-                        token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba",
-                        type: "ADDRESS",
-                        onSelect: function(suggestion) { customerData.address = suggestion.value; document.getElementById('addressError').classList.remove('visible'); }
-                    });
-                }
-            }
-
-            function validatePhone() {
-                if (!iti) return false;
-                const error = document.getElementById('phoneError');
-                if (iti.isValidNumber()) { error.classList.remove('visible'); return true; }
-                else { error.classList.add('visible'); return false; }
-            }
-            function validateSurname() {
-                const val = document.getElementById('surname').value.trim();
-                const err = document.getElementById('surnameError');
-                if (val.length >= 2) { err.classList.remove('visible'); return true; }
-                else { err.classList.add('visible'); return false; }
-            }
-            function validateName() {
-                const val = document.getElementById('name').value.trim();
-                const err = document.getElementById('nameError');
-                if (val.length >= 2) { err.classList.remove('visible'); return true; }
-                else { err.classList.add('visible'); return false; }
-            }
-            function validateAddress() {
-                const val = document.getElementById('address').value.trim();
-                const err = document.getElementById('addressError');
-                if (val.length >= 5) { err.classList.remove('visible'); return true; }
-                else { err.classList.add('visible'); return false; }
-            }
-
-            function showReviewScreen() {
-                const reviewContent = document.getElementById('reviewContent');
-                const composition = {
-                    order_id: customerData.order_id,
-                    team: currentTeam,
-                    customer: customerData,
-                    players: []
-                };
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) composition.players.push({ position: labelDiv.textContent, name: playerName });
-                });
-                let html = `<h3>Команда: ${composition.team}</h3><h4>Клиент:</h4><p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p><p>${customerData.phone}</p><p>${customerData.address}</p><h4>Состав:</h4><ul>`;
-                composition.players.forEach(p => { html += `<li>${p.position}: ${p.name}</li>`; });
-                html += `</ul>`;
-                reviewContent.innerHTML = html;
-                showScreen('review');
-            }
-
-            function sendOrderToBot() {
-                const tg = window.Telegram?.WebApp;
-                if (!tg) {
-                    alert("❌ Telegram WebApp недоступен. Откройте приложение через Telegram.");
-                    return;
-                }
-                let tgUser = window.savedTelegramUser;
-                if (!tgUser) {
-                    // Повторная попытка получить пользователя
-                    const initDataUnsafe = tg.initDataUnsafe;
-                    if (initDataUnsafe?.user) {
-                        tgUser = initDataUnsafe.user;
-                    } else if (tg.initData) {
-                        const params = new URLSearchParams(tg.initData);
-                        const userStr = params.get('user');
-                        if (userStr) {
-                            try {
-                                tgUser = JSON.parse(decodeURIComponent(userStr));
-                            } catch(e) {}
-                        }
-                    }
-                    if (tgUser) {
-                        window.savedTelegramUser = tgUser;
-                    }
-                }
-                if (!tgUser) {
-                    alert("❌ Не удалось определить пользователя Telegram. Убедитесь, что вы открыли WebApp через кнопку в боте.");
-                    return;
-                }
-
-                const composition = {
-                    order_id: customerData.order_id,
-                    team: currentTeam,
-                    customer: {
-                        ...customerData,
-                        telegram: tgUser.username || null,
-                        telegram_id: tgUser.id || null
-                    },
-                    players: []
-                };
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) composition.players.push({ position: labelDiv.textContent, name: playerName });
-                });
-                console.log("Sending composition:", composition);
-                try {
-                    tg.sendData(JSON.stringify(composition));
-                    showScreen('confirm');
-                } catch (err) {
-                    alert("Ошибка отправки данных");
-                    console.error(err);
-                }
-            }
-
-            // навигация
-            document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
-            document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
-            document.getElementById('backToFormFromReview').addEventListener('click', () => showScreen('form'));
-            document.getElementById('finishButton').addEventListener('click', () => {
-                showScreen('teamSelect');
-                clearField();
-                customerData = { surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null };
-                if (iti) iti.setNumber('');
-                document.getElementById('surname').value = '';
-                document.getElementById('name').value = '';
-                document.getElementById('patronymic').value = '';
-                document.getElementById('address').value = '';
-            });
-            document.getElementById('editOrder').addEventListener('click', () => showScreen('form'));
-            document.getElementById('confirmOrder').addEventListener('click', sendOrderToBot);
-            document.getElementById('nextToConfirm').addEventListener('click', () => {
-                if (!validateSurname()) return;
-                if (!validateName()) return;
-                if (!validatePhone()) return;
-                if (!validateAddress()) return;
-                customerData.surname = document.getElementById('surname').value.trim();
-                customerData.name = document.getElementById('name').value.trim();
-                customerData.patronymic = document.getElementById('patronymic').value.trim();
-                customerData.phone = iti.getNumber();
-                customerData.address = document.getElementById('address').value.trim();
-                customerData.order_id = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
-                showReviewScreen();
-            });
-
-            const phoneInput = document.getElementById('phone');
-            iti = window.intlTelInput(phoneInput, {
-                initialCountry: "ru",
-                separateDialCode: true,
-                autoPlaceholder: "polite",
-                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-            });
-            initDaData();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const teamParam = urlParams.get('team');
-            if (teamParam) loadTeamData(teamParam);
-            else showScreen('teamSelect');
-        })();
+        });
     </script>
 </body>
 </html>

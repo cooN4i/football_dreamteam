@@ -542,45 +542,38 @@
             }
 
             function getTelegramUser() {
-                if (!window.Telegram || !Telegram.WebApp) return null;
+                const initData = Telegram.WebApp.initData;
 
-                return Telegram.WebApp.initDataUnsafe?.user || null;
+                if (!initData) return null;
+
+                const params = new URLSearchParams(initData);
+                const userRaw = params.get("user");
+
+                if (!userRaw) return null;
+
+                try {
+                    return JSON.parse(userRaw);
+                } catch (e) {
+                    console.error("Ошибка парсинга user:", e);
+                    return null;
+                }
             }
             
             function sendOrderToBot() {
-                const tg = window.Telegram?.WebApp;
-
-                console.log("=== SEND ORDER START ===");
-
-                if (!tg) {
-                    console.error("❌ Telegram WebApp недоступен");
-                    alert("Откройте приложение через Telegram");
+                if (!window.Telegram || !Telegram.WebApp) {
+                    alert("❌ Telegram WebApp недоступен");
                     return;
                 }
 
-                // 🔥 Важно: ещё раз инициализируем
-                tg.ready();
+                const tgUser = getTelegramUser();
 
-                console.log("INIT DATA:", tg.initDataUnsafe);
-
-                const tgUser = tg.initDataUnsafe?.user;
-
-                console.log("TG USER:", tgUser);
-
-                if (!tgUser) {
-                    console.error("❌ Telegram user не определён");
-                    alert("❌ Telegram user не определён. Откройте WebApp через Telegram.");
-                    return;
-                }
-
-                // Собираем состав
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
                     customer: {
                         ...customerData,
-                        telegram: tgUser.username || null,
-                        telegram_id: tgUser.id || null
+                        telegram: tgUser?.username ? '@' + tgUser.username : null,
+                        telegram_id: tgUser?.id || null
                     },
                     players: []
                 };
@@ -588,6 +581,8 @@
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
+
+                    if (!positionDiv || !labelDiv) return;
 
                     const playerName = fieldPositions.get(positionDiv);
 
@@ -599,16 +594,17 @@
                     }
                 });
 
-                console.log("📦 FINAL PAYLOAD:", composition);
+                const realData = JSON.stringify(composition);
 
                 try {
-                    tg.sendData(JSON.stringify(composition));
-                    console.log("📤 Data sent to bot");
+                    showScreen('confirm');
 
-                    tg.close();
-                } catch (err) {
-                    console.error("❌ sendData error:", err);
-                    alert("Ошибка отправки данных");
+                    setTimeout(() => {
+                        Telegram.WebApp.sendData(realData);
+                    }, 300);
+
+                } catch (e) {
+                    alert('❌ Ошибка sendData: ' + e.message);
                 }
             }
 
