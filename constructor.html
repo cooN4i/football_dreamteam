@@ -47,7 +47,6 @@
         .field {
             width: 100%;
             max-width: 500px;
-
             margin: 0 auto 20px;
             border-radius: 24px;
             position: relative;
@@ -56,7 +55,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-
             background: #2e7d32;
         }
         .positions-grid {
@@ -445,13 +443,12 @@
                 </div>
             </div>
         </div>
-        <!-- Шаг 3: Финальное подтверждение -->
+        <!-- Шаг 3: Финальное подтверждение (больше не используется, но оставлен для совместимости) -->
         <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
                 <h2>Заказ успешно оформлен!</h2>
                 <p>Спасибо, ваш заказ принят.</p>
-                <p id="autoCloseTimer">Приложение закроется через 3 секунды...</p>
                 <button class="action-button order-button" id="finishButton">Готово</button>
             </div>
         </div>
@@ -492,8 +489,6 @@
             const closeSelector = document.getElementById('closeSelector');
             
             let currentPositionElement = null;
-            let autoCloseInterval = null;
-            let orderSent = false;
             const orderButton = document.getElementById('orderButton');
 
             function showReviewScreen() {
@@ -551,7 +546,7 @@
 
                 const unsafe = Telegram.WebApp.initDataUnsafe;
                 if (unsafe && unsafe.user) {
-                    console.log("✅ User получен:", unsafe.user); // для дебага
+                    console.log("✅ User получен:", unsafe.user);
                     return unsafe.user;
                 }
 
@@ -564,10 +559,6 @@
                     alert("❌ Telegram WebApp недоступен");
                     return;
                 }
-
-                // Защита от повторной отправки
-                if (orderSent) return;
-                orderSent = true;
 
                 const tgUser = getTelegramUser();
 
@@ -598,40 +589,12 @@
                 const realData = JSON.stringify(composition);
                 console.log('Отправляем данные:', realData);
 
-                // Показываем экран подтверждения
-                showScreen('confirm');
-
-                // Запускаем обратный отсчёт
-                let secondsLeft = 3;
-                const timerElement = document.getElementById('autoCloseTimer');
-                if (timerElement) {
-                    timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
-                    autoCloseInterval = setInterval(() => {
-                        secondsLeft--;
-                        if (secondsLeft >= 0) {
-                            timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
-                        }
-                        if (secondsLeft <= 0) {
-                            clearInterval(autoCloseInterval);
-                            // Отправляем данные и закрываем приложение
-                            try {
-                                Telegram.WebApp.sendData(realData);
-                                Telegram.WebApp.close();
-                            } catch (e) {
-                                alert('❌ Ошибка отправки: ' + e.message);
-                            }
-                        }
-                    }, 1000);
-                } else {
-                    // Если элемент таймера не найден (на всякий случай), отправляем через 3 секунды
-                    setTimeout(() => {
-                        try {
-                            Telegram.WebApp.sendData(realData);
-                            Telegram.WebApp.close();
-                        } catch (e) {
-                            alert('❌ Ошибка отправки: ' + e.message);
-                        }
-                    }, 3000);
+                try {
+                    Telegram.WebApp.sendData(realData);
+                    // После отправки сразу закрываем приложение
+                    Telegram.WebApp.close();
+                } catch (e) {
+                    alert('❌ Ошибка отправки: ' + e.message);
                 }
             }
 
@@ -675,12 +638,10 @@
                 }
             }
 
-            // Проверка заполненности состава (11 позиций)
             function isTeamComplete() {
                 return fieldPositions.size === 11;
             }
 
-            // Обновление видимости кнопки "Подтвердить"
             function updateOrderButtonVisibility() {
                 if (isTeamComplete()) {
                     orderButton.style.display = 'inline-block';
@@ -689,7 +650,6 @@
                 }
             }
 
-            // Инициализация DaData
             function initDaData() {
                 if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
                     $("#address").suggestions({
@@ -703,7 +663,6 @@
                 }
             }
 
-            // Валидация телефона
             function validatePhone() {
                 if (!iti) return false;
                 const errorElement = document.getElementById('phoneError');
@@ -717,7 +676,6 @@
                 }
             }
 
-            // Валидация фамилии
             function validateSurname() {
                 const value = document.getElementById('surname').value.trim();
                 const errorElement = document.getElementById('surnameError');
@@ -730,7 +688,6 @@
                 }
             }
 
-            // Валидация имени
             function validateName() {
                 const value = document.getElementById('name').value.trim();
                 const errorElement = document.getElementById('nameError');
@@ -743,12 +700,10 @@
                 }
             }
 
-            // Валидация отчества (необязательно)
             function validatePatronymic() {
                 return true;
             }
 
-            // Валидация адреса (упрощённая для отладки)
             function validateAddress() {
                 const value = document.getElementById('address').value.trim();
                 const errorElement = document.getElementById('addressError');
@@ -761,7 +716,6 @@
                 }
             }
 
-            // Загрузка данных игроков
             async function loadTeamData() {
                 try {
                     const response = await fetch(jsonFileName);
@@ -773,7 +727,6 @@
                 }
             }
 
-            // Инициализация конструктора
             function initApp() {
                 positions.forEach(pos => {
                     pos.addEventListener('click', () => openSelector(pos));
@@ -791,46 +744,13 @@
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
                 document.getElementById('finishButton').addEventListener('click', () => {
-                    if (autoCloseInterval) clearInterval(autoCloseInterval);
-                    if (!orderSent) {
-                        orderSent = true;
-                        // Собираем данные так же, как в sendOrderToBot, и отправляем
-                        const tgUser = getTelegramUser();
-                        const composition = {
-                            order_id: customerData.order_id,
-                            team: team,
-                            order_date: new Date().toLocaleString('ru-RU'),
-                            customer: {
-                                ...customerData,
-                                telegram: tgUser?.username ? '@' + tgUser.username : null,
-                                telegram_id: tgUser?.id || null
-                            },
-                            players: []
-                        };
-                        positionWrappers.forEach(wrapper => {
-                            const positionDiv = wrapper.querySelector('.position');
-                            const labelDiv = wrapper.querySelector('.position-label');
-                            const playerName = fieldPositions.get(positionDiv);
-                            if (playerName) {
-                                composition.players.push({
-                                    position: labelDiv.textContent,
-                                    name: playerName
-                                });
-                            }
-                        });
-                        const realData = JSON.stringify(composition);
-                        try {
-                            Telegram.WebApp.sendData(realData);
-                        } catch (e) {
-                            alert('❌ Ошибка отправки: ' + e.message);
-                        }
-                    }
                     Telegram.WebApp.close();
                 });
                 document.getElementById('editOrder').addEventListener('click', () => {
                     showScreen('form');
                 });
                 
+                // Обработчик подтверждения заказа: отправляем данные и закрываем приложение
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     const platform = Telegram.WebApp.platform || '';
                     if (platform === 'web') {
@@ -839,8 +759,7 @@
                         return;
                     }
 
-                    // Запускаем процесс отправки и показа экрана
-                    sendOrderToBot();
+                    sendOrderToBot(); // отправляет данные и закрывает приложение
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
@@ -1035,7 +954,6 @@
                 closePanel();
             }
 
-            // Запуск
             loadTeamData();
         })();
     </script>
