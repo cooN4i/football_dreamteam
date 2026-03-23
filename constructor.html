@@ -542,34 +542,18 @@
             }
 
             function getTelegramUser() {
-                const initDataUnsafe = window.Telegram?.WebApp?.initDataUnsafe;
-                if (initDataUnsafe && initDataUnsafe.user) {
-                    let user = initDataUnsafe.user;
-                    if (typeof user === 'string') {
-                        try {
-                            user = JSON.parse(user);
-                        } catch(e) {
-                            console.error('Ошибка парсинга user строки:', e);
-                            return null;
-                        }
-                    }
-                    return user;
+                if (!window.Telegram || !Telegram.WebApp) {
+                    console.warn("Telegram WebApp недоступен");
+                    return null;
                 }
 
-                const initData = window.Telegram?.WebApp?.initData;
-                if (initData) {
-                    const params = new URLSearchParams(initData);
-                    const userRaw = params.get('user');
-                    if (userRaw) {
-                        try {
-                            return JSON.parse(userRaw);
-                        } catch(e) {
-                            console.error('Ошибка парсинга user из initData:', e);
-                        }
-                    }
+                const unsafe = Telegram.WebApp.initDataUnsafe;
+                if (unsafe && unsafe.user) {
+                    console.log("✅ User получен:", unsafe.user); // для дебага
+                    return unsafe.user;
                 }
 
-                console.error('Не удалось получить данные пользователя');
+                console.warn("⚠️ Нет user в initDataUnsafe");
                 return null;
             }
             
@@ -580,6 +564,7 @@
                 }
 
                 const tgUser = getTelegramUser();
+
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
@@ -594,8 +579,11 @@
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
+
                     if (!positionDiv || !labelDiv) return;
+
                     const playerName = fieldPositions.get(positionDiv);
+
                     if (playerName) {
                         composition.players.push({
                             position: labelDiv.textContent,
@@ -605,16 +593,14 @@
                 });
 
                 const realData = JSON.stringify(composition);
-                console.log('Отправляем данные:', realData);
 
                 try {
-                    Telegram.WebApp.sendData(realData);
-                    // Переходим на экран подтверждения
                     showScreen('confirm');
-                    // Закрываем приложение через 0.5 секунды, чтобы данные точно отправились
+
                     setTimeout(() => {
-                        Telegram.WebApp.close();
-                    }, 500);
+                        Telegram.WebApp.sendData(realData);
+                    }, 300);
+
                 } catch (e) {
                     alert('❌ Ошибка sendData: ' + e.message);
                 }
@@ -775,16 +761,14 @@
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
-                document.getElementById('finishButton').addEventListener('click', () => {
-                    Telegram.WebApp.close();
-                });
+                document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('editOrder').addEventListener('click', () => {
                     showScreen('form');
                 });
                 
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     sendOrderToBot();
-                    // showScreen('confirm');
+                    showScreen('confirm');
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {

@@ -32,7 +32,6 @@ def webhook():
     logger.info("🔥 WEBHOOK RECEIVED")
 
     update_json = request.get_json(silent=True)
-    logger.info(f"Full update_json: {update_json}")
 
     if not update_json:
         return jsonify({'ok': True})
@@ -41,7 +40,6 @@ def webhook():
     if 'message' in update_json and 'web_app_data' in update_json['message']:
         try:
             raw_data = update_json['message']['web_app_data']['data']
-            logger.info(f"Received web_app_data: {raw_data}")
             data = json.loads(raw_data)
 
             chat_id = update_json['message']['chat']['id']
@@ -51,16 +49,24 @@ def webhook():
             customer = data.get("customer", {})
             players = data.get("players", [])
 
+            # === НАДЁЖНОЕ ПОЛУЧЕНИЕ TG ДАННЫХ (ГЛАВНОЕ ИСПРАВЛЕНИЕ) ===
+            from_user = update_json['message'].get('from', {})
+
+            # telegram_id ВСЕГДА берём из чата (гарантия 100%)
+            tg_id = customer.get("telegram_id") or chat_id
+
+            # username — из WebApp или из отправителя сообщения
+            tg_username = customer.get("telegram")
+            if not tg_username and from_user.get("username"):
+                tg_username = "@" + from_user.get("username")
+            # ========================================================
+
             # клиент
             customer_text = (
                 f"{customer.get('surname', '')} "
                 f"{customer.get('name', '')} "
                 f"{customer.get('patronymic', '')}"
             ).strip()
-
-            # telegram username
-            tg_username = customer.get("telegram", None)
-            tg_id = customer.get("telegram_id", None)
 
             telegram_line = tg_username if tg_username else "не указан"
             telegram_id_line = tg_id if tg_id else "не указан"
@@ -86,15 +92,11 @@ def webhook():
 
             # отправка админу
             if ADMIN_CHAT_ID:
-                try:
-                    bot.send_message(
-                        ADMIN_CHAT_ID,
-                        admin_message,
-                        parse_mode="HTML"
-                    )
-                    logger.info("Message sent to admin")
-                except Exception as e:
-                    logger.error(f"Failed to send to admin: {e}")
+                bot.send_message(
+                    ADMIN_CHAT_ID,
+                    admin_message,
+                    parse_mode="HTML"
+                )
 
             # отправка пользователю
             markup = InlineKeyboardMarkup()
@@ -102,21 +104,21 @@ def webhook():
                 InlineKeyboardButton(
                     "📩 Написать в поддержку", url="https://t.me/kylo_gg")
             )
-            try:
-                bot.send_message(
-                    chat_id,
-                    f"✅ <b>Спасибо за заказ!</b>\n\n"
-                    f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
-                    f"📝 Если есть вопросы - напишите нам.",
-                    parse_mode="HTML",
-                    reply_markup=markup
-                )
-                logger.info("Message sent to user")
-            except Exception as e:
-                logger.error(f"Failed to send to user: {e}")
+
+            bot.send_message(
+                chat_id,
+                f"✅ <b>Спасибо за заказ!</b>\n\n"
+                f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
+                f"📝 Если есть вопросы - напишите нам.",
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+
+            logger.info(
+                f"✅ Заказ №{order_id} от {chat_id} (@{tg_username or 'no_username'})")
 
         except Exception as e:
-            logger.error(f"❌ Error processing web_app_data: {e}")
+            logger.error(f"❌ Error processing order: {e}")
 
     # обработка обычных апдейтов
     try:
@@ -131,12 +133,16 @@ def webhook():
 # ---------------- START ----------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = InlineKeyboardMarkup()
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+
     web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
-    markup.add(InlineKeyboardButton("⚽ Открыть конструктор", web_app=web_app))
+
+    button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
+    markup.add(button)
+
     bot.send_message(
         message.chat.id,
-        "Нажмите кнопку ниже 👇",
+        "Нажми кнопку ниже 👇",
         reply_markup=markup
     )
 
