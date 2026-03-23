@@ -569,7 +569,6 @@
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
-                    order_date: new Date().toLocaleString('ru-RU'),
                     customer: {
                         ...customerData,
                         telegram: tgUser?.username ? '@' + tgUser.username : null,
@@ -582,6 +581,7 @@
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     const playerName = fieldPositions.get(positionDiv);
+
                     if (playerName) {
                         composition.players.push({
                             position: labelDiv.textContent,
@@ -591,11 +591,17 @@
                 });
 
                 const realData = JSON.stringify(composition);
-                console.log('Отправляем данные:', realData);
 
                 try {
-                    Telegram.WebApp.sendData(realData);
-                    // Не закрываем приложение и не переключаем экран — экран подтверждения уже показан
+                    showScreen('confirm');
+
+                    // Показываем экран успеха 1,5 секунды (чтобы пользователь увидел)
+                    // Потом отправляем данные + закрываем приложение
+                    setTimeout(() => {
+                        Telegram.WebApp.sendData(realData);
+                        Telegram.WebApp.close();           // ← ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ
+                    }, 3000);
+
                 } catch (e) {
                     alert('❌ Ошибка отправки: ' + e.message);
                 }
