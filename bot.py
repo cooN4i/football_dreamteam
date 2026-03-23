@@ -3,7 +3,14 @@ import json
 import logging
 from flask import Flask, request, jsonify
 import telebot
-from telebot.types import Update, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+from telebot.types import (
+    Update,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    WebAppInfo,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
 # ---------------- CONFIG ----------------
 TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
@@ -82,13 +89,18 @@ def webhook():
                 )
 
             # отправка пользователю
+            markup = InlineKeyboardMarkup()
+            markup.add(
+                InlineKeyboardButton("📩 Написать в поддержку", url="https://t.me/kylo_gg")
+            )
+
             bot.send_message(
                 chat_id,
                 f"✅ <b>Спасибо за заказ!</b>\n\n"
                 f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
-                f"📩 Поддержка: https://t.me/kylo_gg\n"
-                f"Если есть вопросы — напишите нам.\n\n",
-                parse_mode="HTML"
+                f"📝 Если есть вопросы - напишите нам.",
+                parse_mode="HTML",
+                reply_markup=markup
             )
 
         except Exception as e:
