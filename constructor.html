@@ -493,6 +493,7 @@
             
             let currentPositionElement = null;
             let autoCloseInterval = null;
+            let orderSent = false;
             const orderButton = document.getElementById('orderButton');
 
             function showReviewScreen() {
@@ -564,11 +565,16 @@
                     return;
                 }
 
+                // Защита от повторной отправки
+                if (orderSent) return;
+                orderSent = true;
+
                 const tgUser = getTelegramUser();
 
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
+                    order_date: new Date().toLocaleString('ru-RU'),
                     customer: {
                         ...customerData,
                         telegram: tgUser?.username ? '@' + tgUser.username : null,
@@ -581,7 +587,6 @@
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     const playerName = fieldPositions.get(positionDiv);
-
                     if (playerName) {
                         composition.players.push({
                             position: labelDiv.textContent,
@@ -591,19 +596,42 @@
                 });
 
                 const realData = JSON.stringify(composition);
+                console.log('Отправляем данные:', realData);
 
-                try {
-                    showScreen('confirm');
+                // Показываем экран подтверждения
+                showScreen('confirm');
 
-                    // Показываем экран успеха 1,5 секунды (чтобы пользователь увидел)
-                    // Потом отправляем данные + закрываем приложение
+                // Запускаем обратный отсчёт
+                let secondsLeft = 3;
+                const timerElement = document.getElementById('autoCloseTimer');
+                if (timerElement) {
+                    timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
+                    autoCloseInterval = setInterval(() => {
+                        secondsLeft--;
+                        if (secondsLeft >= 0) {
+                            timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
+                        }
+                        if (secondsLeft <= 0) {
+                            clearInterval(autoCloseInterval);
+                            // Отправляем данные и закрываем приложение
+                            try {
+                                Telegram.WebApp.sendData(realData);
+                                Telegram.WebApp.close();
+                            } catch (e) {
+                                alert('❌ Ошибка отправки: ' + e.message);
+                            }
+                        }
+                    }, 1000);
+                } else {
+                    // Если элемент таймера не найден (на всякий случай), отправляем через 3 секунды
                     setTimeout(() => {
-                        Telegram.WebApp.sendData(realData);
-                        Telegram.WebApp.close();           // ← ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ
+                        try {
+                            Telegram.WebApp.sendData(realData);
+                            Telegram.WebApp.close();
+                        } catch (e) {
+                            alert('❌ Ошибка отправки: ' + e.message);
+                        }
                     }, 3000);
-
-                } catch (e) {
-                    alert('❌ Ошибка отправки: ' + e.message);
                 }
             }
 
@@ -764,6 +792,39 @@
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
                 document.getElementById('finishButton').addEventListener('click', () => {
                     if (autoCloseInterval) clearInterval(autoCloseInterval);
+                    if (!orderSent) {
+                        orderSent = true;
+                        // Собираем данные так же, как в sendOrderToBot, и отправляем
+                        const tgUser = getTelegramUser();
+                        const composition = {
+                            order_id: customerData.order_id,
+                            team: team,
+                            order_date: new Date().toLocaleString('ru-RU'),
+                            customer: {
+                                ...customerData,
+                                telegram: tgUser?.username ? '@' + tgUser.username : null,
+                                telegram_id: tgUser?.id || null
+                            },
+                            players: []
+                        };
+                        positionWrappers.forEach(wrapper => {
+                            const positionDiv = wrapper.querySelector('.position');
+                            const labelDiv = wrapper.querySelector('.position-label');
+                            const playerName = fieldPositions.get(positionDiv);
+                            if (playerName) {
+                                composition.players.push({
+                                    position: labelDiv.textContent,
+                                    name: playerName
+                                });
+                            }
+                        });
+                        const realData = JSON.stringify(composition);
+                        try {
+                            Telegram.WebApp.sendData(realData);
+                        } catch (e) {
+                            alert('❌ Ошибка отправки: ' + e.message);
+                        }
+                    }
                     Telegram.WebApp.close();
                 });
                 document.getElementById('editOrder').addEventListener('click', () => {
@@ -778,30 +839,8 @@
                         return;
                     }
 
-                    // 1. Показываем экран подтверждения
-                    showScreen('confirm');
-
-                    // 2. Запускаем таймер обратного отсчёта
-                    let secondsLeft = 3;
-                    const timerElement = document.getElementById('autoCloseTimer');
-                    if (timerElement) {
-                        timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
-                        autoCloseInterval = setInterval(() => {
-                            secondsLeft--;
-                            if (secondsLeft >= 0) {
-                                timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
-                            }
-                            if (secondsLeft <= 0) {
-                                clearInterval(autoCloseInterval);
-                                Telegram.WebApp.close();
-                            }
-                        }, 1000);
-                    }
-
-                    // 3. Отправляем данные после короткой задержки (чтобы экран успел отрисоваться)
-                    setTimeout(() => {
-                        sendOrderToBot();
-                    }, 100);
+                    // Запускаем процесс отправки и показа экрана
+                    sendOrderToBot();
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
