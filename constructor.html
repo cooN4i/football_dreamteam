@@ -451,6 +451,7 @@
             <div class="success-message">
                 <h2>Заказ успешно оформлен!</h2>
                 <p>Спасибо, ваш заказ принят.</p>
+                <p id="autoCloseTimer">Приложение закроется через 3 секунды...</p>
                 <button class="action-button order-button" id="finishButton">Готово</button>
             </div>
         </div>
@@ -491,7 +492,7 @@
             const closeSelector = document.getElementById('closeSelector');
             
             let currentPositionElement = null;
-
+            let autoCloseInterval = null;
             const orderButton = document.getElementById('orderButton');
 
             function showReviewScreen() {
@@ -756,6 +757,7 @@
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
                 document.getElementById('finishButton').addEventListener('click', () => {
+                    if (autoCloseInterval) clearInterval(autoCloseInterval);
                     Telegram.WebApp.close();
                 });
                 document.getElementById('editOrder').addEventListener('click', () => {
@@ -764,19 +766,35 @@
                 
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     const platform = Telegram.WebApp.platform || '';
-
                     if (platform === 'web') {
                         alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
                         Telegram.WebApp.close();
                         return;
                     }
 
-                    // 1. Сначала показываем экран подтверждения
+                    // 1. Показываем экран подтверждения
                     showScreen('confirm');
 
-                    // 2. Через короткую задержку отправляем данные (чтобы экран успел отрисоваться)
+                    // 2. Запускаем таймер обратного отсчёта
+                    let secondsLeft = 3;
+                    const timerElement = document.getElementById('autoCloseTimer');
+                    if (timerElement) {
+                        timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
+                        autoCloseInterval = setInterval(() => {
+                            secondsLeft--;
+                            if (secondsLeft >= 0) {
+                                timerElement.textContent = `Приложение закроется через ${secondsLeft} секунд...`;
+                            }
+                            if (secondsLeft <= 0) {
+                                clearInterval(autoCloseInterval);
+                                Telegram.WebApp.close();
+                            }
+                        }, 1000);
+                    }
+
+                    // 3. Отправляем данные после короткой задержки (чтобы экран успел отрисоваться)
                     setTimeout(() => {
-                        sendOrderToBot();   // теперь эта функция только отправляет данные, не закрывает приложение
+                        sendOrderToBot();
                     }, 100);
                 });
                 

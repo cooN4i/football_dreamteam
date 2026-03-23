@@ -139,9 +139,10 @@ def webhook():
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = InlineKeyboardMarkup()
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
     web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
-    markup.add(InlineKeyboardButton("⚽ Открыть конструктор", web_app=web_app))
+    button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
+    markup.add(button)
     bot.send_message(
         message.chat.id,
         "Нажмите кнопку ниже 👇",
