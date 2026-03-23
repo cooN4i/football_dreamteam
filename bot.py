@@ -85,9 +85,9 @@ def webhook():
             bot.send_message(
                 chat_id,
                 f"✅ <b>Спасибо за заказ!</b>\n\n"
-                f"📦 Номер заказа: <b>№{order_id}</b>\n"
+                f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
                 f"📩 Поддержка: https://t.me/kylo_gg\n"
-                f"Если есть вопросы — напишите нам.\n\n"
+                f"Если есть вопросы — напишите нам.\n\n",
                 parse_mode="HTML"
             )
 
