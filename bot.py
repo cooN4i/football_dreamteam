@@ -3,12 +3,7 @@ import json
 import logging
 from flask import Flask, request, jsonify
 import telebot
-from telebot.types import (
-    Update,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    WebAppInfo
-)
+from telebot.types import Update, InlineKeyboardMarkup, InlineKeyboardButton
 
 # ---------------- CONFIG ----------------
 TOKEN = "8778825702:AAGI0zTcL4zOGdlrJ5HuTKdT5as_SJE_D90"
@@ -27,118 +22,12 @@ logger = logging.getLogger(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    logger.info("🔥 WEBHOOK RECEIVED")
-
-    update_json = request.get_json(silent=True)
-
-    if not update_json:
-        return jsonify({'ok': True})
-
-    # -------- WEBAPP DATA --------
-    if 'message' in update_json and 'web_app_data' in update_json['message']:
-        try:
-            raw_data = update_json['message']['web_app_data']['data']
-            data = json.loads(raw_data)
-
-            logger.info(f"RAW DATA: {raw_data}")
-            logger.info(f"PARSED DATA: {data}")
-
-            chat_id = update_json['message']['chat']['id']
-
-            order_id = data.get("order_id", "—")
-            team = data.get("team", "—")
-            customer = data.get("customer", {})
-            players = data.get("players", [])
-
-            logger.info(f"FULL CUSTOMER: {customer}")
-
-            # клиент
-            customer_text = (
-                f"{customer.get('surname', '')} "
-                f"{customer.get('name', '')} "
-                f"{customer.get('patronymic', '')}"
-            ).strip()
-
-            # telegram данные
-            tg_username = customer.get("telegram")
-            tg_id = customer.get("telegram_id")
-
-            logger.info(f"TG USERNAME: {tg_username}")
-            logger.info(f"TG ID: {tg_id}")
-
-            # ссылка на клиента
-            if tg_username:
-                telegram_link = f"https://t.me/{tg_username}"
-                telegram_display = f"@{tg_username}"
-            elif tg_id:
-                telegram_link = f"tg://user?id={tg_id}"
-                telegram_display = "без username"
-            else:
-                telegram_link = None
-                telegram_display = "не указан"
-
-            # игроки
-            players_text = "\n".join(
-                [f"• {p.get('position')}: {p.get('name')}" for p in players]
-            )
-
-            # -------- сообщение админу --------
-            admin_message = (
-                f"📦 <b>Новый заказ №{order_id}</b>\n\n"
-                f"⚽ <b>Команда:</b> {team}\n\n"
-                f"👤 <b>Клиент:</b>\n"
-                f"{customer_text}\n"
-                f"📱 Telegram: {telegram_display}\n"
-                f"🆔 ID: {tg_id if tg_id else 'не указан'}\n"
-                f"📞 {customer.get('phone', '—')}\n"
-                f"📍 {customer.get('address', '—')}\n\n"
-                f"🧩 <b>Состав:</b>\n"
-                f"{players_text}"
-            )
-
-            # кнопка админу
-            admin_markup = InlineKeyboardMarkup()
-
-            if telegram_link:
-                admin_markup.add(
-                    InlineKeyboardButton(
-                        "💬 Написать клиенту", url=telegram_link)
-                )
-
-            # отправка админу
-            if ADMIN_CHAT_ID:
-                bot.send_message(
-                    ADMIN_CHAT_ID,
-                    admin_message,
-                    parse_mode="HTML",
-                    reply_markup=admin_markup if telegram_link else None
-                )
-
-            # -------- сообщение пользователю --------
-            user_markup = InlineKeyboardMarkup()
-            user_markup.add(
-                InlineKeyboardButton(
-                    "📩 Написать в поддержку", url="https://t.me/kylo_gg")
-            )
-
-            bot.send_message(
-                chat_id,
-                f"✅ <b>Спасибо за заказ!</b>\n\n"
-                f"📦 Номер заказа: <b>№{order_id}</b>\n\n"
-                f"📝 Если есть вопросы — напишите нам.",
-                parse_mode="HTML",
-                reply_markup=user_markup
-            )
-
-        except Exception as e:
-            logger.error(f"❌ Error: {e}")
-
-    # обработка обычных апдейтов
     try:
+        update_json = request.get_json()
         update = Update.de_json(update_json)
         bot.process_new_updates([update])
     except Exception as e:
-        logger.error(f"❌ Update error: {e}")
+        logger.exception(f"WEBHOOK ERROR: {e}")
 
     return jsonify({'ok': True})
 
@@ -146,8 +35,9 @@ def webhook():
 # ---------------- START ----------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = InlineKeyboardMarkup()
+    from telebot.types import WebAppInfo
 
+    markup = InlineKeyboardMarkup()
     web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
 
     markup.add(
@@ -159,6 +49,91 @@ def start(message):
         "Нажми кнопку ниже 👇",
         reply_markup=markup
     )
+
+
+# ---------------- WEB APP HANDLER ----------------
+@bot.message_handler(content_types=['web_app_data'])
+def handle_web_app(message):
+    try:
+        data = json.loads(message.web_app_data.data)
+
+        logger.info(f"WEB APP DATA: {data}")
+
+        chat_id = message.chat.id
+
+        order_id = data.get("order_id", "—")
+        team = data.get("team", "—")
+        customer = data.get("customer", {})
+        players = data.get("players", [])
+
+        customer_text = (
+            f"{customer.get('surname', '')} "
+            f"{customer.get('name', '')} "
+            f"{customer.get('patronymic', '')}"
+        ).strip()
+
+        tg_username = customer.get("telegram")
+        tg_id = customer.get("telegram_id")
+
+        if tg_username:
+            telegram_display = f"@{tg_username}"
+        elif tg_id:
+            telegram_display = f"id: {tg_id}"
+        else:
+            telegram_display = "не указан"
+
+        players_text = "\n".join(
+            [f"• {p.get('position')}: {p.get('name')}" for p in players]
+        )
+
+        # -------- ADMIN MESSAGE --------
+        admin_message = (
+            f"📦 <b>Новый заказ №{order_id}</b>\n\n"
+            f"⚽ <b>Команда:</b> {team}\n\n"
+            f"👤 <b>Клиент:</b>\n"
+            f"{customer_text}\n"
+            f"📱 Telegram: {telegram_display}\n"
+            f"📞 {customer.get('phone', '—')}\n"
+            f"📍 {customer.get('address', '—')}\n\n"
+            f"🧩 <b>Состав:</b>\n"
+            f"{players_text}"
+        )
+
+        admin_markup = InlineKeyboardMarkup()
+
+        if tg_username:
+            admin_markup.add(
+                InlineKeyboardButton(
+                    "💬 Написать клиенту",
+                    url=f"https://t.me/{tg_username}"
+                )
+            )
+
+        bot.send_message(
+            ADMIN_CHAT_ID,
+            admin_message,
+            parse_mode="HTML",
+            reply_markup=admin_markup
+        )
+
+        # -------- USER MESSAGE --------
+        user_markup = InlineKeyboardMarkup()
+        user_markup.add(
+            InlineKeyboardButton(
+                "📩 Написать в поддержку",
+                url="https://t.me/kylo_gg"
+            )
+        )
+
+        bot.send_message(
+            chat_id,
+            f"✅ <b>Спасибо за заказ!</b>\n\n📦 Заказ №{order_id}",
+            parse_mode="HTML",
+            reply_markup=user_markup
+        )
+
+    except Exception as e:
+        logger.exception(f"WEB APP HANDLER ERROR: {e}")
 
 
 # ---------------- HEALTH ----------------
