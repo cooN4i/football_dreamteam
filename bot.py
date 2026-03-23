@@ -11,7 +11,7 @@ from telebot.types import (
 )
 
 # ---------------- CONFIG ----------------
-TOKEN = "8523781397:AAES_yF9SIUwUqAIQVVC99bhDDIVAIFSYKE"
+TOKEN = "8778825702:AAGI0zTcL4zOGdlrJ5HuTKdT5as_SJE_D90"
 WEBHOOK_URL = "https://football-dreamteam.onrender.com/webhook"
 ADMIN_CHAT_ID = 985380350
 
