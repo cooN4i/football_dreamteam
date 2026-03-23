@@ -15,249 +15,42 @@
     <meta http-equiv="Expires" content="0" />
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: system-ui, sans-serif;
-            margin: 0;
-            padding: 16px;
-            background: #f0f2f5;
-        }
-        /* Экран выбора команды */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .team-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
+        body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f0f2f5; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; width: 100%; max-width: 500px; margin: 0 auto; }
+        .team-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; font-weight: bold; font-size: 1.2rem; }
         .team-card:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .team-card:active { transform: scale(0.98); }
-
-        /* Экран конструктора */
-        .back-button {
-            display: inline-block;
-            margin-bottom: 16px;
-            padding: 8px 16px;
-            background: #ddd;
-            border-radius: 20px;
-            text-decoration: none;
-            color: black;
-            font-weight: 500;
-            cursor: pointer;
-        }
+        .back-button { display: inline-block; margin-bottom: 16px; padding: 8px 16px; background: #ddd; border-radius: 20px; text-decoration: none; color: black; font-weight: 500; cursor: pointer; }
         h2 { margin-top: 0; }
-        .field {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto 20px;
-            border-radius: 24px;
-            background: #2e7d32;
-            padding: 12px;
-            overflow: hidden;
-        }
-        .positions-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .line {
-            display: flex;
-            justify-content: center;
-            gap: clamp(4px, 2vw, 12px);
-            flex-wrap: nowrap;
-        }
-        .position-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: clamp(60px, 16vw, 90px);
-        }
-        .position {
-            min-height: 90px;
-            width: 100%;
-            aspect-ratio: 2 / 3;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            user-select: none;
-        }
+        .field { width: 100%; max-width: 500px; margin: 0 auto 20px; border-radius: 24px; background: #2e7d32; padding: 12px; overflow: hidden; }
+        .positions-grid { display: flex; flex-direction: column; gap: 10px; }
+        .line { display: flex; justify-content: center; gap: clamp(4px, 2vw, 12px); flex-wrap: nowrap; }
+        .position-wrapper { display: flex; flex-direction: column; align-items: center; width: clamp(60px, 16vw, 90px); }
+        .position { min-height: 90px; width: 100%; aspect-ratio: 2 / 3; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; user-select: none; }
         .position.filled { border-color: white; }
-        .position img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .position .player-name {
-            position: absolute;
-            bottom: 4px;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.7);
-            padding: 3px;
-            border-radius: 4px;
-            z-index: 2;
-            font-weight: bold;
-            font-size: 10px;
-            text-align: center;
-            pointer-events: none;
-            line-height: 1.2;
-        }
-        .position-label {
-            margin-top: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
-        .selector-panel {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
-            padding: 16px;
-            max-height: 60vh;
-            overflow-y: auto;
-            z-index: 1000;
-        }
+        .position img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+        .position .player-name { position: absolute; bottom: 4px; left: 0; right: 0; background: rgba(255,255,255,0.7); padding: 3px; border-radius: 4px; z-index: 2; font-weight: bold; font-size: 10px; text-align: center; pointer-events: none; line-height: 1.2; }
+        .position-label { margin-top: 4px; font-size: 12px; font-weight: bold; color: #333; text-align: center; }
+        .selector-panel { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2); padding: 16px; max-height: 60vh; overflow-y: auto; z-index: 1000; }
         .selector-panel.active { display: block; }
-        .selector-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .close-button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0 8px;
-        }
-        .players-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
-        .player-option {
-            width: 70px;
-            height: 100px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            background-color: #f0f0f0;
-            transition: transform 0.1s;
-        }
+        .selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .close-button { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0 8px; }
+        .players-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .player-option { width: 70px; height: 100px; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; position: relative; overflow: hidden; background-color: #f0f0f0; transition: transform 0.1s; }
         .player-option:active { transform: scale(0.98); }
-        .player-option img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-        .player-option .player-name {
-            position: absolute;
-            bottom: 4px;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.7);
-            padding: 3px;
-            border-radius: 4px;
-            z-index: 2;
-            font-weight: bold;
-            font-size: 10px;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .separator {
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            color: #666;
-            margin: 8px 0;
-        }
-        .form-container {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            max-width: 400px;
-            margin: 0 auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        .player-option img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+        .player-option .player-name { position: absolute; bottom: 4px; left: 0; right: 0; background: rgba(255,255,255,0.7); padding: 3px; border-radius: 4px; z-index: 2; font-weight: bold; font-size: 10px; text-align: center; line-height: 1.2; }
+        .separator { width: 100%; text-align: center; font-weight: bold; color: #666; margin: 8px 0; }
+        .form-container { background: white; border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 16px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: bold;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-            user-select: text;
-        }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; user-select: text; }
         .iti { width: 100%; }
-        .form-note {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-            font-style: italic;
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 4px;
-            display: none;
-        }
+        .form-note { font-size: 12px; color: #666; margin-top: 4px; font-style: italic; }
+        .error-message { color: #dc3545; font-size: 14px; margin-top: 4px; display: none; }
         .error-message.visible { display: block; }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px auto 0;
-            flex-wrap: wrap;
-        }
-        .action-button {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
+        .button-group { display: flex; justify-content: center; gap: 10px; margin: 20px auto 0; flex-wrap: wrap; }
+        .action-button { padding: 10px 24px; border: none; border-radius: 30px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         .clear-button { background: #dc3545; color: white; }
         .clear-button:hover { background: #c82333; }
         .order-button { background: #28a745; color: white; }
@@ -266,34 +59,25 @@
         .secondary-button:hover { background: #5a6268; }
         .screen { display: none; }
         .screen.active { display: block; }
-        .success-message {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: 20px auto;
-        }
+        .success-message { background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; }
         #constructorScreen { padding-bottom: 120px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Экран выбора команды -->
+        <!-- экран выбора команды -->
         <div id="teamSelectScreen" class="screen active">
             <h1 style="text-align: center;">Выбери команду</h1>
             <div class="team-grid" id="teamGrid">
                 <div class="team-card" data-team="Барселона">Барселона</div>
-                <!-- Здесь можно добавить другие команды -->
+                <!-- другие команды -->
             </div>
         </div>
 
-        <!-- Экран конструктора -->
+        <!-- экран конструктора -->
         <div id="constructorScreen" class="screen">
             <div class="back-button" id="backToTeams">← Назад к командам</div>
             <h2 id="team-title">Загрузка...</h2>
-
             <div class="field" id="field">
                 <div class="positions-grid" id="positionsGrid">
                     <div class="line">
@@ -317,7 +101,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="selector-panel" id="selectorPanel">
                 <div class="selector-header">
                     <h3 id="selectorTitle">Выберите игрока</h3>
@@ -325,14 +108,13 @@
                 </div>
                 <div class="players-list" id="playersList"></div>
             </div>
-
             <div class="button-group">
                 <button class="action-button clear-button" id="clearButton">Очистить состав</button>
                 <button class="action-button order-button" id="orderButton" style="display: none;">Подтвердить</button>
             </div>
         </div>
 
-        <!-- Экран формы контактов -->
+        <!-- экран формы -->
         <div id="formScreen" class="screen">
             <button class="back-button" id="backToConstructor">← Назад к составу</button>
             <h2>Контактные данные</h2>
@@ -369,7 +151,7 @@
             </div>
         </div>
 
-        <!-- Экран проверки заказа -->
+        <!-- экран проверки -->
         <div id="reviewScreen" class="screen">
             <button class="back-button" id="backToFormFromReview">← Назад</button>
             <div class="form-container">
@@ -382,7 +164,7 @@
             </div>
         </div>
 
-        <!-- Экран успешной отправки -->
+        <!-- экран успеха -->
         <div id="confirmScreen" class="screen">
             <div class="success-message">
                 <h2>Заказ отправлен!</h2>
@@ -394,14 +176,37 @@
 
     <script>
         (function() {
-            // Инициализация Telegram WebApp
+            // === УЛУЧШЕННОЕ ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ TELGRAM ===
+            let tgUser = null;
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 console.log("Telegram WebApp ready");
-                console.log("User data:", Telegram.WebApp.initDataUnsafe?.user);
+
+                // 1. Пытаемся получить из initDataUnsafe
+                const initDataUnsafe = Telegram.WebApp.initDataUnsafe;
+                if (initDataUnsafe?.user) {
+                    tgUser = initDataUnsafe.user;
+                    console.log("User from initDataUnsafe:", tgUser);
+                }
+                // 2. Если нет, парсим из initData строки
+                if (!tgUser && Telegram.WebApp.initData) {
+                    const params = new URLSearchParams(Telegram.WebApp.initData);
+                    const userStr = params.get('user');
+                    if (userStr) {
+                        try {
+                            tgUser = JSON.parse(decodeURIComponent(userStr));
+                            console.log("User parsed from initData:", tgUser);
+                        } catch(e) {}
+                    }
+                }
+                if (!tgUser) {
+                    console.warn("⚠️ User data is missing! Check if opened via Telegram bot button.");
+                }
             } else {
-                console.warn("Telegram WebApp not available");
+                console.error("❌ Telegram WebApp not available");
             }
+
+            window.savedTelegramUser = tgUser;
 
             // DOM элементы
             const teamSelectScreen = document.getElementById('teamSelectScreen');
@@ -409,20 +214,16 @@
             const formScreen = document.getElementById('formScreen');
             const reviewScreen = document.getElementById('reviewScreen');
             const confirmScreen = document.getElementById('confirmScreen');
-
             const teamTitle = document.getElementById('team-title');
             const teamGrid = document.getElementById('teamGrid');
             const backToTeams = document.getElementById('backToTeams');
 
             let playersData = [];
-            let fieldPositions = new Map(); // key: DOM position, value: player name
+            let fieldPositions = new Map();
             let currentTeam = null;
-            let customerData = {
-                surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null
-            };
+            let customerData = { surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null };
             let iti = null;
 
-            // Функции показа экранов
             function showScreen(screenName) {
                 teamSelectScreen.classList.remove('active');
                 constructorScreen.classList.remove('active');
@@ -436,7 +237,6 @@
                 else if (screenName === 'confirm') confirmScreen.classList.add('active');
             }
 
-            // Загрузка данных игроков для выбранной команды
             async function loadTeamData(team) {
                 const jsonFileName = team.toLowerCase() + '.json';
                 try {
@@ -445,7 +245,7 @@
                     playersData = await response.json();
                     currentTeam = team;
                     teamTitle.textContent = `Состав ${team}`;
-                    clearField(); // очищаем поле при смене команды
+                    clearField();
                     showScreen('constructor');
                 } catch (error) {
                     alert(`Ошибка загрузки данных: ${error.message}`);
@@ -453,19 +253,15 @@
                 }
             }
 
-            // Обработчик выбора команды
             teamGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.team-card');
                 if (!card) return;
                 const team = card.dataset.team;
                 if (team) loadTeamData(team);
             });
+            backToTeams.addEventListener('click', () => showScreen('teamSelect'));
 
-            backToTeams.addEventListener('click', () => {
-                showScreen('teamSelect');
-            });
-
-            // --- Код конструктора (аналогичный ранее, но с адаптацией под единый файл) ---
+            // === КОД КОНСТРУКТОРА (без изменений) ===
             const positions = document.querySelectorAll('.position');
             const positionWrappers = document.querySelectorAll('.position-wrapper');
             const selectorPanel = document.getElementById('selectorPanel');
@@ -477,13 +273,8 @@
 
             let currentPositionElement = null;
 
-            function isTeamComplete() {
-                return fieldPositions.size === 11;
-            }
-
-            function updateOrderButtonVisibility() {
-                orderButton.style.display = isTeamComplete() ? 'inline-block' : 'none';
-            }
+            function isTeamComplete() { return fieldPositions.size === 11; }
+            function updateOrderButtonVisibility() { orderButton.style.display = isTeamComplete() ? 'inline-block' : 'none'; }
 
             function getAvailablePlayers(positionType, currentPlayerName) {
                 let rusPosition = '';
@@ -497,9 +288,7 @@
                     if (pos !== currentPositionElement) occupiedPlayers.add(name);
                 }
                 let allFree = playersData.filter(p => !occupiedPlayers.has(p.name));
-                if (rusPosition === 'ВРТ') {
-                    return { same: allFree.filter(p => p.position === 'ВРТ'), other: [] };
-                }
+                if (rusPosition === 'ВРТ') return { same: allFree.filter(p => p.position === 'ВРТ'), other: [] };
                 const samePos = allFree.filter(p => p.position === rusPosition);
                 const otherPos = allFree.filter(p => p.position !== rusPosition && p.position !== 'ВРТ');
                 return { same: samePos, other: otherPos };
@@ -514,12 +303,7 @@
                 const img = document.createElement('img');
                 img.src = imagePath;
                 img.alt = player.name;
-                img.onerror = () => {
-                    img.style.display = 'none';
-                    div.style.backgroundColor = '#d3d3d3';
-                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
-                    nameSpan.style.color = 'white';
-                };
+                img.onerror = () => { img.style.display = 'none'; div.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'player-name';
                 nameSpan.textContent = player.name;
@@ -547,11 +331,10 @@
 
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
-                const currentPlayer = fieldPositions.get(positionElement);
                 const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
                 selectorTitle.textContent = `Выберите ${positionNames[positionType]}`;
-                const available = getAvailablePlayers(positionType, currentPlayer);
-                renderPlayerList(available, positionType, currentPlayer);
+                const available = getAvailablePlayers(positionType);
+                renderPlayerList(available, positionType);
                 currentPositionElement = positionElement;
                 selectorPanel.classList.add('active');
             }
@@ -576,12 +359,7 @@
                 const img = document.createElement('img');
                 img.src = imagePath;
                 img.alt = playerName;
-                img.onerror = () => {
-                    img.style.display = 'none';
-                    positionElement.style.backgroundColor = '#d3d3d3';
-                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
-                    nameSpan.style.color = 'white';
-                };
+                img.onerror = () => { img.style.display = 'none'; positionElement.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'player-name';
                 nameSpan.textContent = playerName;
@@ -590,11 +368,7 @@
                 positionElement.classList.add('filled');
             }
 
-            function closePanel() {
-                selectorPanel.classList.remove('active');
-                currentPositionElement = null;
-            }
-
+            function closePanel() { selectorPanel.classList.remove('active'); currentPositionElement = null; }
             function clearField() {
                 positions.forEach(pos => {
                     const img = pos.querySelector('img');
@@ -608,27 +382,18 @@
                 closePanel();
             }
 
-            // Навешиваем обработчики на позиции
-            positions.forEach(pos => {
-                pos.addEventListener('click', () => openSelector(pos));
-            });
+            positions.forEach(pos => pos.addEventListener('click', () => openSelector(pos)));
             closeSelector.addEventListener('click', closePanel);
             clearButton.addEventListener('click', clearField);
-            orderButton.addEventListener('click', () => {
-                if (!isTeamComplete()) return;
-                showScreen('form');
-            });
+            orderButton.addEventListener('click', () => { if (isTeamComplete()) showScreen('form'); });
 
-            // Инициализация формы (DaData, intl-tel-input, валидация)
+            // === ФОРМА ===
             function initDaData() {
                 if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
                     $("#address").suggestions({
                         token: "02b611f77b1856bdf4f97fe52afe0ba0960330ba",
                         type: "ADDRESS",
-                        onSelect: function(suggestion) {
-                            customerData.address = suggestion.value;
-                            document.getElementById('addressError').classList.remove('visible');
-                        }
+                        onSelect: function(suggestion) { customerData.address = suggestion.value; document.getElementById('addressError').classList.remove('visible'); }
                     });
                 }
             }
@@ -636,46 +401,26 @@
             function validatePhone() {
                 if (!iti) return false;
                 const error = document.getElementById('phoneError');
-                if (iti.isValidNumber()) {
-                    error.classList.remove('visible');
-                    return true;
-                } else {
-                    error.classList.add('visible');
-                    return false;
-                }
+                if (iti.isValidNumber()) { error.classList.remove('visible'); return true; }
+                else { error.classList.add('visible'); return false; }
             }
             function validateSurname() {
                 const val = document.getElementById('surname').value.trim();
                 const err = document.getElementById('surnameError');
-                if (val.length >= 2) {
-                    err.classList.remove('visible');
-                    return true;
-                } else {
-                    err.classList.add('visible');
-                    return false;
-                }
+                if (val.length >= 2) { err.classList.remove('visible'); return true; }
+                else { err.classList.add('visible'); return false; }
             }
             function validateName() {
                 const val = document.getElementById('name').value.trim();
                 const err = document.getElementById('nameError');
-                if (val.length >= 2) {
-                    err.classList.remove('visible');
-                    return true;
-                } else {
-                    err.classList.add('visible');
-                    return false;
-                }
+                if (val.length >= 2) { err.classList.remove('visible'); return true; }
+                else { err.classList.add('visible'); return false; }
             }
             function validateAddress() {
                 const val = document.getElementById('address').value.trim();
                 const err = document.getElementById('addressError');
-                if (val.length >= 5) {
-                    err.classList.remove('visible');
-                    return true;
-                } else {
-                    err.classList.add('visible');
-                    return false;
-                }
+                if (val.length >= 5) { err.classList.remove('visible'); return true; }
+                else { err.classList.add('visible'); return false; }
             }
 
             function showReviewScreen() {
@@ -690,16 +435,9 @@
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({ position: labelDiv.textContent, name: playerName });
-                    }
+                    if (playerName) composition.players.push({ position: labelDiv.textContent, name: playerName });
                 });
-                let html = `<h3>Команда: ${composition.team}</h3>
-                            <h4>Клиент:</h4>
-                            <p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p>
-                            <p>${customerData.phone}</p>
-                            <p>${customerData.address}</p>
-                            <h4>Состав:</h4><ul>`;
+                let html = `<h3>Команда: ${composition.team}</h3><h4>Клиент:</h4><p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p><p>${customerData.phone}</p><p>${customerData.address}</p><h4>Состав:</h4><ul>`;
                 composition.players.forEach(p => { html += `<li>${p.position}: ${p.name}</li>`; });
                 html += `</ul>`;
                 reviewContent.innerHTML = html;
@@ -709,14 +447,33 @@
             function sendOrderToBot() {
                 const tg = window.Telegram?.WebApp;
                 if (!tg) {
-                    alert("Откройте приложение через Telegram");
+                    alert("❌ Telegram WebApp недоступен. Откройте приложение через Telegram.");
                     return;
                 }
-                const tgUser = tg.initDataUnsafe?.user;
+                let tgUser = window.savedTelegramUser;
                 if (!tgUser) {
-                    alert("❌ Telegram user не определён. Убедитесь, что вы открыли WebApp через кнопку в боте.");
+                    // Повторная попытка получить пользователя
+                    const initDataUnsafe = tg.initDataUnsafe;
+                    if (initDataUnsafe?.user) {
+                        tgUser = initDataUnsafe.user;
+                    } else if (tg.initData) {
+                        const params = new URLSearchParams(tg.initData);
+                        const userStr = params.get('user');
+                        if (userStr) {
+                            try {
+                                tgUser = JSON.parse(decodeURIComponent(userStr));
+                            } catch(e) {}
+                        }
+                    }
+                    if (tgUser) {
+                        window.savedTelegramUser = tgUser;
+                    }
+                }
+                if (!tgUser) {
+                    alert("❌ Не удалось определить пользователя Telegram. Убедитесь, что вы открыли WebApp через кнопку в боте.");
                     return;
                 }
+
                 const composition = {
                     order_id: customerData.order_id,
                     team: currentTeam,
@@ -731,10 +488,9 @@
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
                     const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({ position: labelDiv.textContent, name: playerName });
-                    }
+                    if (playerName) composition.players.push({ position: labelDiv.textContent, name: playerName });
                 });
+                console.log("Sending composition:", composition);
                 try {
                     tg.sendData(JSON.stringify(composition));
                     showScreen('confirm');
@@ -744,13 +500,12 @@
                 }
             }
 
-            // Навигация между экранами
+            // навигация
             document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
             document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
             document.getElementById('backToFormFromReview').addEventListener('click', () => showScreen('form'));
             document.getElementById('finishButton').addEventListener('click', () => {
                 showScreen('teamSelect');
-                // Очистка данных для следующего заказа
                 clearField();
                 customerData = { surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null };
                 if (iti) iti.setNumber('');
@@ -775,7 +530,6 @@
                 showReviewScreen();
             });
 
-            // Инициализация intl-tel-input при первом показе формы
             const phoneInput = document.getElementById('phone');
             iti = window.intlTelInput(phoneInput, {
                 initialCountry: "ru",
@@ -785,14 +539,10 @@
             });
             initDaData();
 
-            // Если в URL есть параметр team, сразу загружаем конструктор (для прямого доступа)
             const urlParams = new URLSearchParams(window.location.search);
             const teamParam = urlParams.get('team');
-            if (teamParam) {
-                loadTeamData(teamParam);
-            } else {
-                showScreen('teamSelect');
-            }
+            if (teamParam) loadTeamData(teamParam);
+            else showScreen('teamSelect');
         })();
     </script>
 </body>
