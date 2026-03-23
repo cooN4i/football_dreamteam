@@ -563,21 +563,12 @@
                     return;
                 }
 
-                // === ДИСКЛЕЙМЕР ДЛЯ WEB-ВЕРСИИ ===
-                const platform = Telegram.WebApp.platform || '';
-                if (platform === 'web') {
-                    alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
-                    Telegram.WebApp.close();
-                    return;
-                }
-                // =================================
-
                 const tgUser = getTelegramUser();
 
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
-                    order_date: new Date().toLocaleString('ru-RU'),   // ← дата заказа
+                    order_date: new Date().toLocaleString('ru-RU'),   // дата и время заказа
                     customer: {
                         ...customerData,
                         telegram: tgUser?.username ? '@' + tgUser.username : null,
@@ -601,17 +592,12 @@
 
                 const realData = JSON.stringify(composition);
 
-                try {
-                    showScreen('confirm');
+                showScreen('confirm');
 
-                    setTimeout(() => {
-                        Telegram.WebApp.sendData(realData);
-                        Telegram.WebApp.close();
-                    }, 1500);
-
-                } catch (e) {
-                    alert('❌ Ошибка отправки: ' + e.message);
-                }
+                setTimeout(() => {
+                    Telegram.WebApp.sendData(realData);
+                    Telegram.WebApp.close();
+                }, 1500);
             }
 
             function showScreen(screenName) {
@@ -777,8 +763,16 @@
                 });
                 
                 document.getElementById('confirmOrder').addEventListener('click', () => {
+                    const platform = Telegram.WebApp.platform || '';
+                    
+                    if (platform === 'web') {
+                        alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
+                        Telegram.WebApp.close();
+                        return;
+                    }
+                    
+                    // Если не веб — нормальная отправка
                     sendOrderToBot();
-                    showScreen('confirm');
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {

@@ -53,11 +53,22 @@
     </div>
 
     <script>
+        // Проверка платформы сразу при открытии
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+
+            const platform = Telegram.WebApp.platform || '';
+            if (platform === 'web') {
+                alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере).');
+                Telegram.WebApp.close();
+            }
+        }
+
         const cards = document.querySelectorAll('.team-card');
         cards.forEach(card => {
             card.addEventListener('click', () => {
                 const team = card.dataset.team;
-                // Переходим на страницу конструктора, передавая название команды в URL
                 window.location.href = `constructor.html?team=${encodeURIComponent(team)}`;
             });
         });
