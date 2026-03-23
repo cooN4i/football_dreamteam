@@ -58,7 +58,10 @@ def webhook():
             tg_username = customer.get("telegram", None)
             tg_id = customer.get("telegram_id", None)
 
-            telegram_line = tg_username if tg_username else "не указан"
+            if tg_username:
+                telegram_line = f"@{tg_username}"
+            else:
+                telegram_line = "не указан"
             telegram_id_line = tg_id if tg_id else "не указан"
 
             # игроки

@@ -542,21 +542,9 @@
             }
 
             function getTelegramUser() {
-                const initData = Telegram.WebApp.initData;
+                if (!window.Telegram || !Telegram.WebApp) return null;
 
-                if (!initData) return null;
-
-                const params = new URLSearchParams(initData);
-                const userRaw = params.get("user");
-
-                if (!userRaw) return null;
-
-                try {
-                    return JSON.parse(userRaw);
-                } catch (e) {
-                    console.error("Ошибка парсинга user:", e);
-                    return null;
-                }
+                return Telegram.WebApp.initDataUnsafe?.user || null;
             }
             
             function sendOrderToBot() {
@@ -572,7 +560,7 @@
                     team: team,
                     customer: {
                         ...customerData,
-                        telegram: tgUser?.username ? '@' + tgUser.username : null,
+                        telegram: tgUser?.username ? tgUser.username : null,
                         telegram_id: tgUser?.id || null
                     },
                     players: []
