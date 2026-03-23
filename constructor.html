@@ -548,24 +548,39 @@
             }
             
             function sendOrderToBot() {
-                const tg = window.Telegram.WebApp;
+                const tg = window.Telegram?.WebApp;
 
-                tg.ready();
+                console.log("=== SEND ORDER START ===");
 
-                const tgUser = tg.initDataUnsafe?.user;
-
-                if (!tgUser) {
-                    alert("❌ Telegram user не определён");
+                if (!tg) {
+                    console.error("❌ Telegram WebApp недоступен");
+                    alert("Откройте приложение через Telegram");
                     return;
                 }
 
+                // 🔥 Важно: ещё раз инициализируем
+                tg.ready();
+
+                console.log("INIT DATA:", tg.initDataUnsafe);
+
+                const tgUser = tg.initDataUnsafe?.user;
+
+                console.log("TG USER:", tgUser);
+
+                if (!tgUser) {
+                    console.error("❌ Telegram user не определён");
+                    alert("❌ Telegram user не определён. Откройте WebApp через Telegram.");
+                    return;
+                }
+
+                // Собираем состав
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
                     customer: {
                         ...customerData,
-                        telegram: tgUser.username,
-                        telegram_id: tgUser.id
+                        telegram: tgUser.username || null,
+                        telegram_id: tgUser.id || null
                     },
                     players: []
                 };
@@ -584,10 +599,17 @@
                     }
                 });
 
-                console.log("FINAL PAYLOAD:", composition);
+                console.log("📦 FINAL PAYLOAD:", composition);
 
-                tg.sendData(JSON.stringify(composition));
-                tg.close();
+                try {
+                    tg.sendData(JSON.stringify(composition));
+                    console.log("📤 Data sent to bot");
+
+                    tg.close();
+                } catch (err) {
+                    console.error("❌ sendData error:", err);
+                    alert("Ошибка отправки данных");
+                }
             }
 
             function showScreen(screenName) {
