@@ -548,28 +548,24 @@
             }
             
             function sendOrderToBot() {
-                if (!window.Telegram || !Telegram.WebApp) {
-                    alert("❌ Telegram WebApp недоступен");
+                const tg = window.Telegram.WebApp;
+
+                tg.ready();
+
+                const tgUser = tg.initDataUnsafe?.user;
+
+                if (!tgUser) {
+                    alert("❌ Telegram user не определён");
                     return;
                 }
-
-                const tgUser = Telegram.WebApp.initDataUnsafe?.user || null;
-
-                console.log("=== TELEGRAM DEBUG ===");
-                console.log("initDataUnsafe:", Telegram.WebApp.initDataUnsafe);
-                console.log("tgUser:", tgUser);
-                console.log("username:", tgUser?.username);
-                console.log("id:", tgUser?.id);
-
-                console.log("TG USER:", tgUser);
 
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
                     customer: {
                         ...customerData,
-                        telegram: tgUser?.username || null,
-                        telegram_id: tgUser?.id || null
+                        telegram: tgUser.username,
+                        telegram_id: tgUser.id
                     },
                     players: []
                 };
@@ -588,12 +584,10 @@
                     }
                 });
 
-                const realData = JSON.stringify(composition);
+                console.log("FINAL PAYLOAD:", composition);
 
-                console.log("SENDING DATA:", realData);
-
-                Telegram.WebApp.sendData(realData);
-                Telegram.WebApp.close();
+                tg.sendData(JSON.stringify(composition));
+                tg.close();
             }
 
             function showScreen(screenName) {
