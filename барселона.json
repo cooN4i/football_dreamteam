@@ -1,6 +1,6 @@
 [
   {
-    "name": "Иньеста",
+    "name": "Iniesta",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -11,7 +11,7 @@
     ]
   },
   {
-    "name": "Кунде",
+    "name": "Kounde",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -22,7 +22,7 @@
     ]
   },
   {
-    "name": "Де Йонг",
+    "name": "De Jong",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -33,7 +33,7 @@
     ]
   },
   {
-    "name": "Левандовски",
+    "name": "Lewandowski",
     "position": "НАП",
     "variants": [
       {
@@ -49,7 +49,7 @@
     ]
   },
   {
-    "name": "Ямаль",
+    "name": "Yamal",
     "position": "НАП",
     "variants": [
       {
@@ -60,7 +60,7 @@
     ]
   },
   {
-    "name": "Месси",
+    "name": "Messi",
     "position": "НАП",
     "variants": [
       {
@@ -71,7 +71,7 @@
     ]
   },
   {
-    "name": "Алькасер",
+    "name": "Alcacer",
     "position": "НАП",
     "variants": [
       {
@@ -82,7 +82,7 @@
     ]
   },
   {
-    "name": "Суарез",
+    "name": "Suarez",
     "position": "НАП",
     "variants": [
       {
@@ -93,7 +93,7 @@
     ]
   },
   {
-    "name": "Деулофеу",
+    "name": "Deulofeu",
     "position": "НАП",
     "variants": [
       {
@@ -104,7 +104,7 @@
     ]
   },
   {
-    "name": "Дембеле",
+    "name": "Dembele",
     "position": "НАП",
     "variants": [
       {
@@ -115,7 +115,7 @@
     ]
   },
   {
-    "name": "Бускетс",
+    "name": "Busquets",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -126,7 +126,7 @@
     ]
   },
   {
-    "name": "Маскерано",
+    "name": "Mascherano",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -137,7 +137,7 @@
     ]
   },
   {
-    "name": "Роберто",
+    "name": "Roberto",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -148,7 +148,7 @@
     ]
   },
   {
-    "name": "Семеду",
+    "name": "Semedo",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -159,7 +159,7 @@
     ]
   },
   {
-    "name": "Умтити",
+    "name": "Umtiti",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -170,7 +170,7 @@
     ]
   },
   {
-    "name": "Пике",
+    "name": "Pique",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -181,7 +181,7 @@
     ]
   },
   {
-    "name": "Альба",
+    "name": "Alba",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -192,7 +192,7 @@
     ]
   },
   {
-    "name": "Тер Штеген",
+    "name": "Ter Stegen",
     "position": "ВРТ",
     "variants": [
       {
@@ -203,7 +203,7 @@
     ]
   },
   {
-    "name": "Гави",
+    "name": "Gavi",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -214,7 +214,7 @@
     ]
   },
   {
-    "name": "Жоан Гарсия",
+    "name": "Joan Garcia",
     "position": "ВРТ",
     "variants": [
       {
@@ -225,7 +225,7 @@
     ]
   },
   {
-    "name": "Кубарси",
+    "name": "Cubarsi",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -236,7 +236,7 @@
     ]
   },
   {
-    "name": "Араухо",
+    "name": "Araujo",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -252,7 +252,7 @@
     ]
   },
   {
-    "name": "Эрик Гарсия",
+    "name": "Eric Garcia",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -263,7 +263,7 @@
     ]
   },
   {
-    "name": "Бальде",
+    "name": "Balde",
     "position": "ЗАЩ",
     "variants": [
       {
@@ -274,7 +274,7 @@
     ]
   },
   {
-    "name": "Лопез",
+    "name": "Lopez",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -285,7 +285,7 @@
     ]
   },
   {
-    "name": "Педри",
+    "name": "Pedri",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -296,7 +296,7 @@
     ]
   },
   {
-    "name": "Ольмо",
+    "name": "Olmo",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -307,7 +307,7 @@
     ]
   },
   {
-    "name": "Ракитич",
+    "name": "Rakitic",
     "position": "ПЗЩ",
     "variants": [
       {
@@ -318,7 +318,7 @@
     ]
   },
   {
-    "name": "Торрес",
+    "name": "Torres",
     "position": "НАП",
     "variants": [
       {
@@ -329,7 +329,7 @@
     ]
   },
   {
-    "name": "Рафинья",
+    "name": "Raphinha",
     "position": "НАП",
     "variants": [
       {
@@ -340,7 +340,7 @@
     ]
   },
   {
-    "name": "Решфорд",
+    "name": "Rashford",
     "position": "НАП",
     "variants": [
       {

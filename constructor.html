@@ -592,12 +592,20 @@
 
                 const realData = JSON.stringify(composition);
 
-                showScreen('confirm');
-
-                setTimeout(() => {
+                try {
+                    // ✅ ДАННЫЕ ОТПРАВЛЯЮТСЯ СРАЗУ
                     Telegram.WebApp.sendData(realData);
-                    Telegram.WebApp.close();
-                }, 1500);
+                    
+                    showScreen('confirm');
+
+                    // Автозакрытие через 1,5 секунды (для красоты)
+                    setTimeout(() => {
+                        Telegram.WebApp.close();
+                    }, 1500);
+
+                } catch (e) {
+                    alert('❌ Ошибка отправки: ' + e.message);
+                }
             }
 
             function showScreen(screenName) {
