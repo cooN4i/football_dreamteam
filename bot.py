@@ -45,7 +45,7 @@ def webhook():
             chat_id = update_json['message']['chat']['id']
 
             order_id = data.get("order_id", "—")
-            order_date = data.get("order_date", "—")          # ← НОВАЯ СТРОКА
+            order_date = data.get("order_date", "—")
             team = data.get("team", "—")
             customer = data.get("customer", {})
             players = data.get("players", [])
@@ -75,7 +75,6 @@ def webhook():
             # сообщение админу
             admin_message = (
                 f"📦 <b>Новый заказ №{order_id}</b>\n\n"
-                # ← дата добавлена
                 f"📅 <b>Дата заказа:</b> {order_date}\n\n"
                 f"⚽ <b>Команда:</b> {team}\n\n"
                 f"👤 <b>Клиент:</b>\n"
@@ -126,31 +125,30 @@ def webhook():
 
     return jsonify({'ok': True})
 
-
 # ---------------- START ----------------
+
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-
+    markup = InlineKeyboardMarkup()  # меняем на InlineKeyboardMarkup
     web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
-
-    button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
-    markup.add(button)
-
+    markup.add(InlineKeyboardButton("⚽ Открыть конструктор", web_app=web_app))
     bot.send_message(
         message.chat.id,
-        "Нажми кнопку ниже 👇",
+        "Нажмите кнопку ниже 👇",
         reply_markup=markup
     )
 
-
 # ---------------- HEALTH ----------------
+
+
 @app.route('/health', methods=['GET'])
 def health():
     return "OK", 200
 
-
 # ---------------- WEBHOOK SET ----------------
+
+
 def set_webhook():
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
