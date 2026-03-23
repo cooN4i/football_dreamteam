@@ -553,14 +553,22 @@
                     return;
                 }
 
-                const tgUser = getTelegramUser();
+                const tgUser = Telegram.WebApp.initDataUnsafe?.user || null;
+
+                console.log("=== TELEGRAM DEBUG ===");
+                console.log("initDataUnsafe:", Telegram.WebApp.initDataUnsafe);
+                console.log("tgUser:", tgUser);
+                console.log("username:", tgUser?.username);
+                console.log("id:", tgUser?.id);
+
+                console.log("TG USER:", tgUser);
 
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
                     customer: {
                         ...customerData,
-                        telegram: tgUser?.username ? tgUser.username : null,
+                        telegram: tgUser?.username || null,
                         telegram_id: tgUser?.id || null
                     },
                     players: []
@@ -569,8 +577,6 @@
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
-
-                    if (!positionDiv || !labelDiv) return;
 
                     const playerName = fieldPositions.get(positionDiv);
 
@@ -584,16 +590,10 @@
 
                 const realData = JSON.stringify(composition);
 
-                try {
-                    showScreen('confirm');
+                console.log("SENDING DATA:", realData);
 
-                    setTimeout(() => {
-                        Telegram.WebApp.sendData(realData);
-                    }, 300);
-
-                } catch (e) {
-                    alert('❌ Ошибка sendData: ' + e.message);
-                }
+                Telegram.WebApp.sendData(realData);
+                Telegram.WebApp.close();
             }
 
             function showScreen(screenName) {
