@@ -449,8 +449,8 @@
         <div id="confirmScreen" class="screen">
             <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
-                <h2>Заказ отправлен!</h2>
-                <p>Спасибо, ваш заказ принят. Мы свяжемся с вами в ближайшее время.</p>
+                <h2>Заказ успешно оформлен!</h2>
+                <p>Спасибо, ваш заказ принят.</p>
                 <button class="action-button order-button" id="finishButton">Готово</button>
             </div>
         </div>
@@ -579,9 +579,6 @@
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
-
-                    if (!positionDiv || !labelDiv) return;
-
                     const playerName = fieldPositions.get(positionDiv);
 
                     if (playerName) {
@@ -597,12 +594,15 @@
                 try {
                     showScreen('confirm');
 
+                    // Показываем экран успеха 1,5 секунды (чтобы пользователь увидел)
+                    // Потом отправляем данные + закрываем приложение
                     setTimeout(() => {
                         Telegram.WebApp.sendData(realData);
-                    }, 300);
+                        Telegram.WebApp.close();           // ← ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ
+                    }, 1500);
 
                 } catch (e) {
-                    alert('❌ Ошибка sendData: ' + e.message);
+                    alert('❌ Ошибка отправки: ' + e.message);
                 }
             }
 
@@ -761,7 +761,13 @@
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
-                document.getElementById('finishButton').addEventListener('click', () => showScreen('constructor'));
+                document.getElementById('finishButton').addEventListener('click', () => {
+                    if (Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    } else {
+                        showScreen('constructor');
+                    }
+                });
                 document.getElementById('editOrder').addEventListener('click', () => {
                     showScreen('form');
                 });
