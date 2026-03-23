@@ -542,40 +542,35 @@
             }
 
             function getTelegramUser() {
-                if (!window.Telegram?.WebApp) return null;
-
-                const initData = Telegram.WebApp.initDataUnsafe;
-                let user = initData.user;
-
-                // Если user — строка, пробуем распарсить
-                if (typeof user === 'string') {
-                    try {
-                        user = JSON.parse(user);
-                    } catch (e) {
-                        console.error('Ошибка парсинга user строки:', e);
-                        return null;
+                const initDataUnsafe = window.Telegram?.WebApp?.initDataUnsafe;
+                if (initDataUnsafe && initDataUnsafe.user) {
+                    let user = initDataUnsafe.user;
+                    if (typeof user === 'string') {
+                        try {
+                            user = JSON.parse(user);
+                        } catch(e) {
+                            console.error('Ошибка парсинга user строки:', e);
+                            return null;
+                        }
                     }
-                }
-
-                // Если user — объект
-                if (user && typeof user === 'object') {
                     return user;
                 }
 
-                // Запасной вариант: парсим initData
-                const initDataString = Telegram.WebApp.initData;
-                if (!initDataString) return null;
-
-                const params = new URLSearchParams(initDataString);
-                const userRaw = params.get('user');
-                if (!userRaw) return null;
-
-                try {
-                    return JSON.parse(userRaw);
-                } catch (e) {
-                    console.error('Ошибка парсинга user из initData:', e);
-                    return null;
+                const initData = window.Telegram?.WebApp?.initData;
+                if (initData) {
+                    const params = new URLSearchParams(initData);
+                    const userRaw = params.get('user');
+                    if (userRaw) {
+                        try {
+                            return JSON.parse(userRaw);
+                        } catch(e) {
+                            console.error('Ошибка парсинга user из initData:', e);
+                        }
+                    }
                 }
+
+                console.error('Не удалось получить данные пользователя');
+                return null;
             }
             
             function sendOrderToBot() {
@@ -585,7 +580,6 @@
                 }
 
                 const tgUser = getTelegramUser();
-
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
@@ -600,11 +594,8 @@
                 positionWrappers.forEach(wrapper => {
                     const positionDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
-
                     if (!positionDiv || !labelDiv) return;
-
                     const playerName = fieldPositions.get(positionDiv);
-
                     if (playerName) {
                         composition.players.push({
                             position: labelDiv.textContent,
@@ -614,14 +605,11 @@
                 });
 
                 const realData = JSON.stringify(composition);
+                console.log('Отправляем данные:', realData);
 
                 try {
-                    showScreen('confirm');
-
-                    setTimeout(() => {
-                        Telegram.WebApp.sendData(realData);
-                    }, 300);
-
+                    Telegram.WebApp.sendData(realData);
+                    Telegram.WebApp.close(); // принудительное закрытие
                 } catch (e) {
                     alert('❌ Ошибка sendData: ' + e.message);
                 }
@@ -789,7 +777,7 @@
                 
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     sendOrderToBot();
-                    showScreen('confirm');
+                    // showScreen('confirm');
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
