@@ -542,19 +542,23 @@
             }
 
             function getTelegramUser() {
-                const initData = Telegram.WebApp.initData;
+                // 1. Пытаемся получить данные напрямую из initDataUnsafe
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    return Telegram.WebApp.initDataUnsafe.user;
+                }
 
+                // 2. Если не получилось, пробуем распарсить initData вручную (на случай старых версий)
+                const initData = Telegram.WebApp.initData;
                 if (!initData) return null;
 
                 const params = new URLSearchParams(initData);
                 const userRaw = params.get("user");
-
                 if (!userRaw) return null;
 
                 try {
                     return JSON.parse(userRaw);
                 } catch (e) {
-                    console.error("Ошибка парсинга user:", e);
+                    console.error("Ошибка парсинга user из initData:", e);
                     return null;
                 }
             }
