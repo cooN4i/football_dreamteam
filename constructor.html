@@ -567,6 +567,7 @@
                 const platform = Telegram.WebApp.platform || '';
                 if (platform === 'web') {
                     alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
+                    Telegram.WebApp.close();
                     return;
                 }
                 // =================================
