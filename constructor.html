@@ -594,9 +594,7 @@
 
                 try {
                     Telegram.WebApp.sendData(realData);
-                    // Показываем экран подтверждения
-                    showScreen('confirm');
-                    // НЕ закрываем автоматически — пользователь закроет приложение сам по кнопке "Готово"
+                    // Не закрываем приложение и не переключаем экран — экран подтверждения уже показан
                 } catch (e) {
                     alert('❌ Ошибка отправки: ' + e.message);
                 }
@@ -766,15 +764,20 @@
                 
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     const platform = Telegram.WebApp.platform || '';
-                    
+
                     if (platform === 'web') {
                         alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
                         Telegram.WebApp.close();
                         return;
                     }
-                    
-                    // Если не веб — нормальная отправка
-                    sendOrderToBot();
+
+                    // 1. Сначала показываем экран подтверждения
+                    showScreen('confirm');
+
+                    // 2. Через короткую задержку отправляем данные (чтобы экран успел отрисоваться)
+                    setTimeout(() => {
+                        sendOrderToBot();   // теперь эта функция только отправляет данные, не закрывает приложение
+                    }, 100);
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
