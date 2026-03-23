@@ -563,11 +563,20 @@
                     return;
                 }
 
+                // === ДИСКЛЕЙМЕР ДЛЯ WEB-ВЕРСИИ ===
+                const platform = Telegram.WebApp.platform || '';
+                if (platform === 'web') {
+                    alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
+                    return;
+                }
+                // =================================
+
                 const tgUser = getTelegramUser();
 
                 const composition = {
                     order_id: customerData.order_id,
                     team: team,
+                    order_date: new Date().toLocaleString('ru-RU'),   // ← дата заказа
                     customer: {
                         ...customerData,
                         telegram: tgUser?.username ? '@' + tgUser.username : null,
@@ -594,11 +603,9 @@
                 try {
                     showScreen('confirm');
 
-                    // Показываем экран успеха 1,5 секунды (чтобы пользователь увидел)
-                    // Потом отправляем данные + закрываем приложение
                     setTimeout(() => {
                         Telegram.WebApp.sendData(realData);
-                        Telegram.WebApp.close();           // ← ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ
+                        Telegram.WebApp.close();
                     }, 1500);
 
                 } catch (e) {
@@ -762,11 +769,7 @@
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
                 document.getElementById('finishButton').addEventListener('click', () => {
-                    if (Telegram.WebApp) {
-                        Telegram.WebApp.close();
-                    } else {
-                        showScreen('constructor');
-                    }
+                    Telegram.WebApp.close();
                 });
                 document.getElementById('editOrder').addEventListener('click', () => {
                     showScreen('form');

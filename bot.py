@@ -45,21 +45,17 @@ def webhook():
             chat_id = update_json['message']['chat']['id']
 
             order_id = data.get("order_id", "—")
+            order_date = data.get("order_date", "—")          # ← НОВАЯ СТРОКА
             team = data.get("team", "—")
             customer = data.get("customer", {})
             players = data.get("players", [])
 
-            # === НАДЁЖНОЕ ПОЛУЧЕНИЕ TG ДАННЫХ (ГЛАВНОЕ ИСПРАВЛЕНИЕ) ===
+            # Надёжное получение TG данных
             from_user = update_json['message'].get('from', {})
-
-            # telegram_id ВСЕГДА берём из чата (гарантия 100%)
             tg_id = customer.get("telegram_id") or chat_id
-
-            # username — из WebApp или из отправителя сообщения
             tg_username = customer.get("telegram")
             if not tg_username and from_user.get("username"):
                 tg_username = "@" + from_user.get("username")
-            # ========================================================
 
             # клиент
             customer_text = (
@@ -79,6 +75,8 @@ def webhook():
             # сообщение админу
             admin_message = (
                 f"📦 <b>Новый заказ №{order_id}</b>\n\n"
+                # ← дата добавлена
+                f"📅 <b>Дата заказа:</b> {order_date}\n\n"
                 f"⚽ <b>Команда:</b> {team}\n\n"
                 f"👤 <b>Клиент:</b>\n"
                 f"{customer_text}\n"
@@ -90,7 +88,6 @@ def webhook():
                 f"{players_text}"
             )
 
-            # отправка админу
             if ADMIN_CHAT_ID:
                 bot.send_message(
                     ADMIN_CHAT_ID,
