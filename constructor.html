@@ -14,14 +14,11 @@
     <!-- DaData Suggestions -->
     <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
-    <!-- Отключаем кеширование -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: system-ui, sans-serif;
             margin: 0;
@@ -39,29 +36,19 @@
             font-weight: 500;
             cursor: pointer;
         }
-        h2 {
-            margin-top: 0;
-        }
-
-        /* Поле */
+        h2 { margin-top: 0; }
         .field {
             width: 100%;
             max-width: 500px;
             margin: 0 auto 20px;
             border-radius: 24px;
-            position: relative;
             padding: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: #2e7d32;
         }
         .positions-grid {
             width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             gap: 10px;
         }
         .line {
@@ -80,18 +67,13 @@
             min-height: 90px;
             width: 100%;
             aspect-ratio: 2 / 3;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.6);
             border-radius: 8px;
             position: relative;
-            overflow: hidden;
-            transition: background 0.2s, border-color 0.2s;
             cursor: pointer;
-            user-select: none;
         }
-        .position.filled {
-            border-color: white;
-        }
+        .position.filled { border-color: white; }
         .position img {
             width: 100%;
             height: 100%;
@@ -108,14 +90,12 @@
             left: 0;
             right: 0;
             background: rgba(255,255,255,0.7);
-            padding: 3px 3px;
+            padding: 3px;
             border-radius: 4px;
-            z-index: 2;
             font-weight: bold;
             font-size: 10px;
             text-align: center;
-            pointer-events: none;
-            line-height: 1.2;
+            z-index: 2;
         }
         .position-label {
             margin-top: 4px;
@@ -124,8 +104,6 @@
             color: #333;
             text-align: center;
         }
-
-        /* Панель выбора игроков */
         .selector-panel {
             display: none;
             position: fixed;
@@ -141,25 +119,18 @@
             overflow-y: auto;
             z-index: 1000;
         }
-        .selector-panel.active {
-            display: block;
-        }
+        .selector-panel.active { display: block; }
         .selector-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
         }
-        .selector-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-        }
         .close-button {
             background: none;
             border: none;
             font-size: 24px;
             cursor: pointer;
-            padding: 0 8px;
         }
         .players-list {
             display: flex;
@@ -172,15 +143,10 @@
             height: 100px;
             border-radius: 8px;
             border: 1px solid #ccc;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
             position: relative;
             overflow: hidden;
             background-color: #f0f0f0;
-            transition: transform 0.1s;
-        }
-        .player-option:active {
-            transform: scale(0.98);
         }
         .player-option img {
             width: 100%;
@@ -189,7 +155,6 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 1;
         }
         .player-option .player-name {
             position: absolute;
@@ -197,13 +162,10 @@
             left: 0;
             right: 0;
             background: rgba(255,255,255,0.7);
-            padding: 3px 3px;
-            border-radius: 4px;
-            z-index: 2;
+            padding: 3px;
             font-weight: bold;
             font-size: 10px;
             text-align: center;
-            line-height: 1.2;
         }
         .separator {
             width: 100%;
@@ -212,8 +174,6 @@
             color: #666;
             margin: 8px 0;
         }
-
-        /* Стили для формы */
         .form-container {
             background: white;
             border-radius: 20px;
@@ -222,9 +182,7 @@
             margin: 0 auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 16px; }
         .form-group label {
             display: block;
             margin-bottom: 4px;
@@ -236,11 +194,8 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
-            user-select: text;
         }
-        .iti {
-            width: 100%;
-        }
+        .iti { width: 100%; }
         .form-note {
             font-size: 12px;
             color: #666;
@@ -253,9 +208,7 @@
             margin-top: 4px;
             display: none;
         }
-        .error-message.visible {
-            display: block;
-        }
+        .error-message.visible { display: block; }
         .button-group {
             display: flex;
             justify-content: center;
@@ -271,170 +224,80 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            transition: background 0.2s;
         }
-        .clear-button {
-            background: #dc3545;
-            color: white;
-        }
-        .clear-button:hover {
-            background: #c82333;
-        }
-        .order-button {
-            background: #28a745;
-            color: white;
-        }
-        .order-button:hover {
-            background: #218838;
-        }
-        .secondary-button {
-            background: #6c757d;
-            color: white;
-        }
-        .secondary-button:hover {
-            background: #5a6268;
-        }
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
-        .success-message {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: 20px auto;
-        }
-        #constructorScreen {
-            padding-bottom: 120px;
-        }
+        .clear-button { background: #dc3545; color: white; }
+        .order-button { background: #28a745; color: white; }
+        .secondary-button { background: #6c757d; color: white; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        #constructorScreen { padding-bottom: 120px; }
         #paymentContainer {
+            width: 100%;
+            min-height: 500px;
             margin-top: 20px;
-            display: none;
+        }
+        .payment-loader {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Шаг 1: Конструктор состава -->
+        <!-- Шаг 1: Конструктор -->
         <div id="constructorScreen" class="screen active">
             <a href="index.html" class="back-button">← Назад к командам</a>
             <h2 id="team-title">Загрузка...</h2>
-            
-            <div class="field" id="field">
+            <div class="field">
                 <div class="positions-grid" id="positionsGrid">
                     <div class="line">
-                        <div class="position-wrapper">
-                            <div class="position" data-position="FWD"></div>
-                            <div class="position-label">LW</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="FWD"></div>
-                            <div class="position-label">ST</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="FWD"></div>
-                            <div class="position-label">RW</div>
-                        </div>
+                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">LW</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">ST</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="FWD"></div><div class="position-label">RW</div></div>
                     </div>
                     <div class="line">
-                        <div class="position-wrapper">
-                            <div class="position" data-position="MID"></div>
-                            <div class="position-label">CM</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="MID"></div>
-                            <div class="position-label">CM</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="MID"></div>
-                            <div class="position-label">CM</div>
-                        </div>
+                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="MID"></div><div class="position-label">CM</div></div>
                     </div>
                     <div class="line">
-                        <div class="position-wrapper">
-                            <div class="position" data-position="DEF"></div>
-                            <div class="position-label">LB</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="DEF"></div>
-                            <div class="position-label">CB</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="DEF"></div>
-                            <div class="position-label">CB</div>
-                        </div>
-                        <div class="position-wrapper">
-                            <div class="position" data-position="DEF"></div>
-                            <div class="position-label">RB</div>
-                        </div>
+                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">LB</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">CB</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">CB</div></div>
+                        <div class="position-wrapper"><div class="position" data-position="DEF"></div><div class="position-label">RB</div></div>
                     </div>
                     <div class="line">
-                        <div class="position-wrapper">
-                            <div class="position" data-position="GK"></div>
-                            <div class="position-label">GK</div>
-                        </div>
+                        <div class="position-wrapper"><div class="position" data-position="GK"></div><div class="position-label">GK</div></div>
                     </div>
                 </div>
             </div>
-
             <div class="selector-panel" id="selectorPanel">
-                <div class="selector-header">
-                    <h3 id="selectorTitle">Выберите игрока</h3>
-                    <button class="close-button" id="closeSelector">&times;</button>
-                </div>
+                <div class="selector-header"><h3 id="selectorTitle">Выберите игрока</h3><button class="close-button" id="closeSelector">&times;</button></div>
                 <div class="players-list" id="playersList"></div>
             </div>
-
             <div class="button-group">
                 <button class="action-button clear-button" id="clearButton">Очистить состав</button>
                 <button class="action-button order-button" id="orderButton" style="display: none;">Подтвердить</button>
             </div>
         </div>
 
-        <!-- Шаг 2: Форма с контактными данными -->
+        <!-- Шаг 2: Форма контактов -->
         <div id="formScreen" class="screen">
             <button class="back-button" id="backToConstructor">← Назад к составу</button>
             <h2>Контактные данные</h2>
             <div class="form-container">
-                <div class="form-group">
-                    <label for="surname">Фамилия</label>
-                    <input type="text" id="surname" placeholder="Иванов">
-                    <div id="surnameError" class="error-message">Введите фамилию</div>
-                </div>
-                <div class="form-group">
-                    <label for="name">Имя</label>
-                    <input type="text" id="name" placeholder="Иван">
-                    <div id="nameError" class="error-message">Введите имя</div>
-                </div>
-                <div class="form-group">
-                    <label for="patronymic">Отчество</label>
-                    <input type="text" id="patronymic" placeholder="Иванович (при наличии)">
-                    <div id="patronymicError" class="error-message"></div>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Номер телефона</label>
-                    <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
-                    <div id="phoneError" class="error-message">Неверный номер телефона</div>
-                </div>
-                <div class="form-group">
-                    <label for="address">Адрес ПВЗ СДЕК для получения</label>
-                    <input type="text" id="address" placeholder="Начните вводить адрес..." autocomplete="off">
-                    <div class="form-note">*При отсутствии ПВЗ на выбранном адресе будет выбран ближайший</div>
-                    <div id="addressError" class="error-message">Введите корректный адрес</div>
-                </div>
-                <div class="button-group">
-                    <button class="action-button secondary-button" id="backFromForm">Назад</button>
-                    <button class="action-button order-button" id="nextToConfirm">Далее</button>
-                </div>
+                <div class="form-group"><label>Фамилия</label><input type="text" id="surname" placeholder="Иванов"><div id="surnameError" class="error-message">Введите фамилию</div></div>
+                <div class="form-group"><label>Имя</label><input type="text" id="name" placeholder="Иван"><div id="nameError" class="error-message">Введите имя</div></div>
+                <div class="form-group"><label>Отчество</label><input type="text" id="patronymic" placeholder="Иванович"><div id="patronymicError" class="error-message"></div></div>
+                <div class="form-group"><label>Телефон</label><input type="tel" id="phone" placeholder="+7 (999) 123-45-67"><div id="phoneError" class="error-message">Неверный номер</div></div>
+                <div class="form-group"><label>Адрес ПВЗ СДЭК</label><input type="text" id="address" placeholder="Начните вводить адрес..."><div class="form-note">*При отсутствии ПВЗ будет выбран ближайший</div><div id="addressError" class="error-message">Введите адрес</div></div>
+                <div class="button-group"><button class="action-button secondary-button" id="backFromForm">Назад</button><button class="action-button order-button" id="nextToConfirm">Далее</button></div>
             </div>
         </div>
 
-        <!-- Шаг 3: Проверка заказа -->
+        <!-- Шаг 3: Проверка заказа (без оплаты) -->
         <div id="reviewScreen" class="screen">
             <button class="back-button" id="backToFormFromReview">← Назад</button>
             <div class="form-container">
@@ -442,65 +305,59 @@
                 <div id="reviewContent"></div>
                 <div class="button-group">
                     <button class="action-button secondary-button" id="editOrder">Редактировать</button>
-                    <button class="action-button order-button" id="confirmOrder">Подтвердить и оплатить</button>
+                    <button class="action-button order-button" id="payButton">Оплатить</button>
                 </div>
             </div>
         </div>
 
-        <!-- Контейнер для платежной формы -->
-        <div id="paymentContainer"></div>
+        <!-- Шаг 4: Экран оплаты -->
+        <div id="paymentScreen" class="screen">
+            <button class="back-button" id="backToReviewFromPayment">← Назад к заказу</button>
+            <h2>Оплата заказа</h2>
+            <div id="paymentContainer"></div>
+        </div>
     </div>
 
-    <!-- Скрипт интеграции Т-Банка (загружается асинхронно, но инициализация только по кнопке) -->
     <script src="https://integrationjs.t-static.ru/integration.js" async></script>
 
     <script>
         (function() {
-            // ---------- Глобальные переменные ----------
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-            }
+            if (window.Telegram && Telegram.WebApp) Telegram.WebApp.ready();
+
             const urlParams = new URLSearchParams(window.location.search);
             let team = urlParams.get('team') || 'Барселона';
             document.getElementById('team-title').textContent = `Состав ${team}`;
-
             const jsonFileName = team.toLowerCase() + '.json';
             let playersData = [];
-            const fieldPositions = new Map(); // key: DOM position, value: player name
-            
+            const fieldPositions = new Map();
+            let currentPositionElement = null;
+            let iti = null;
+
             window.customerData = {
-                surname: '',
-                name: '',
-                patronymic: '',
-                phone: '',
-                address: '',
-                order_id: null
+                surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null
             };
             const customerData = window.customerData;
-            let iti = null;
 
             const constructorScreen = document.getElementById('constructorScreen');
             const formScreen = document.getElementById('formScreen');
             const reviewScreen = document.getElementById('reviewScreen');
-            
+            const paymentScreen = document.getElementById('paymentScreen');
+
             const positions = document.querySelectorAll('.position');
             const positionWrappers = document.querySelectorAll('.position-wrapper');
             const selectorPanel = document.getElementById('selectorPanel');
             const playersList = document.getElementById('playersList');
             const selectorTitle = document.getElementById('selectorTitle');
             const closeSelector = document.getElementById('closeSelector');
-            
-            let currentPositionElement = null;
             const orderButton = document.getElementById('orderButton');
 
-            // ---------- Вспомогательные функции ----------
             function showScreen(screenName) {
                 constructorScreen.classList.remove('active');
                 formScreen.classList.remove('active');
                 reviewScreen.classList.remove('active');
-                if (screenName === 'constructor') {
-                    constructorScreen.classList.add('active');
-                } else if (screenName === 'form') {
+                paymentScreen.classList.remove('active');
+                if (screenName === 'constructor') constructorScreen.classList.add('active');
+                else if (screenName === 'form') {
                     formScreen.classList.add('active');
                     document.getElementById('surname').value = customerData.surname;
                     document.getElementById('name').value = customerData.name;
@@ -517,18 +374,12 @@
                         });
                     }
                     initDaData();
-                } else if (screenName === 'review') {
-                    reviewScreen.classList.add('active');
-                }
+                } else if (screenName === 'review') reviewScreen.classList.add('active');
+                else if (screenName === 'payment') paymentScreen.classList.add('active');
             }
 
-            function isTeamComplete() {
-                return fieldPositions.size === 11;
-            }
-
-            function updateOrderButtonVisibility() {
-                orderButton.style.display = isTeamComplete() ? 'inline-block' : 'none';
-            }
+            function isTeamComplete() { return fieldPositions.size === 11; }
+            function updateOrderButtonVisibility() { orderButton.style.display = isTeamComplete() ? 'inline-block' : 'none'; }
 
             function initDaData() {
                 if (typeof $.fn.suggestions !== 'undefined' && !$('#address').data('suggestions')) {
@@ -545,61 +396,36 @@
 
             function validatePhone() {
                 if (!iti) return false;
-                const errorElement = document.getElementById('phoneError');
-                if (iti.isValidNumber()) {
-                    errorElement.classList.remove('visible');
-                    return true;
-                } else {
-                    errorElement.classList.add('visible');
-                    return false;
-                }
+                const valid = iti.isValidNumber();
+                document.getElementById('phoneError').classList.toggle('visible', !valid);
+                return valid;
             }
-
             function validateSurname() {
-                const value = document.getElementById('surname').value.trim();
-                const errorElement = document.getElementById('surnameError');
-                if (value.length >= 2) {
-                    errorElement.classList.remove('visible');
-                    return true;
-                } else {
-                    errorElement.classList.add('visible');
-                    return false;
-                }
+                const val = document.getElementById('surname').value.trim();
+                const ok = val.length >= 2;
+                document.getElementById('surnameError').classList.toggle('visible', !ok);
+                return ok;
             }
-
             function validateName() {
-                const value = document.getElementById('name').value.trim();
-                const errorElement = document.getElementById('nameError');
-                if (value.length >= 2) {
-                    errorElement.classList.remove('visible');
-                    return true;
-                } else {
-                    errorElement.classList.add('visible');
-                    return false;
-                }
+                const val = document.getElementById('name').value.trim();
+                const ok = val.length >= 2;
+                document.getElementById('nameError').classList.toggle('visible', !ok);
+                return ok;
             }
-
-            function validatePatronymic() { return true; }
-
             function validateAddress() {
-                const value = document.getElementById('address').value.trim();
-                const errorElement = document.getElementById('addressError');
-                if (value.length >= 5) {
-                    errorElement.classList.remove('visible');
-                    return true;
-                } else {
-                    errorElement.classList.add('visible');
-                    return false;
-                }
+                const val = document.getElementById('address').value.trim();
+                const ok = val.length >= 5;
+                document.getElementById('addressError').classList.toggle('visible', !ok);
+                return ok;
             }
+            function validatePatronymic() { return true; }
 
             function getTelegramUser() {
                 if (!window.Telegram || !Telegram.WebApp) return null;
                 const unsafe = Telegram.WebApp.initDataUnsafe;
-                return (unsafe && unsafe.user) ? unsafe.user : null;
+                return unsafe?.user || null;
             }
 
-            // Отправка заказа в бот (вызывается после успешной оплаты)
             window.sendOrderToBot = function() {
                 if (!window.Telegram || !Telegram.WebApp) {
                     alert("❌ Telegram WebApp недоступен");
@@ -622,167 +448,105 @@
                     players: []
                 };
                 positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
+                    const posDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        composition.players.push({
-                            position: labelDiv.textContent,
-                            name: playerName
-                        });
-                    }
+                    const playerName = fieldPositions.get(posDiv);
+                    if (playerName) composition.players.push({ position: labelDiv.textContent, name: playerName });
                 });
                 const realData = JSON.stringify(composition);
-                console.log('Отправляем данные:', realData);
+                console.log('Отправка заказа:', realData);
                 try {
                     Telegram.WebApp.sendData(realData);
-                    setTimeout(() => { Telegram.WebApp.close(); }, 500);
-                } catch (e) {
-                    alert('❌ Ошибка отправки: ' + e.message);
-                }
+                    setTimeout(() => Telegram.WebApp.close(), 2000);
+                } catch(e) { alert('Ошибка отправки: ' + e.message); }
             };
 
-            // Показ экрана проверки заказа (review)
             function showReviewScreen() {
                 const reviewContent = document.getElementById('reviewContent');
-                let html = `
-                    <h3>Команда: ${team}</h3>
-                    <h4>Клиент:</h4>
-                    <p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p>
-                    <p>${customerData.phone}</p>
-                    <p>${customerData.address}</p>
-                    <h4>Состав:</h4>
-                    <ul>
-                `;
+                let html = `<h3>Команда: ${team}</h3><h4>Клиент:</h4><p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p><p>${customerData.phone}</p><p>${customerData.address}</p><h4>Состав:</h4><ul>`;
                 positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
+                    const posDiv = wrapper.querySelector('.position');
                     const labelDiv = wrapper.querySelector('.position-label');
-                    const playerName = fieldPositions.get(positionDiv);
-                    if (playerName) {
-                        html += `<li>${labelDiv.textContent}: ${playerName}</li>`;
-                    }
+                    const playerName = fieldPositions.get(posDiv);
+                    if (playerName) html += `<li>${labelDiv.textContent}: ${playerName}</li>`;
                 });
                 html += `</ul>`;
                 reviewContent.innerHTML = html;
                 showScreen('review');
             }
 
-            // ---------- Конструктор (выбор игроков) ----------
+            // ---------- Конструктор ----------
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
-                const currentPlayer = fieldPositions.get(positionElement);
-                const positionNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
-                selectorTitle.textContent = `Выберите ${positionNames[positionType]}`;
-                const availablePlayers = getAvailablePlayers(positionType, currentPlayer);
-                renderPlayerList(availablePlayers, positionType, currentPlayer);
+                const posNames = { GK: 'вратаря', DEF: 'защитника', MID: 'полузащитника', FWD: 'нападающего' };
+                selectorTitle.textContent = `Выберите ${posNames[positionType]}`;
+                const available = getAvailablePlayers(positionType);
+                renderPlayerList(available, positionType);
                 currentPositionElement = positionElement;
                 selectorPanel.classList.add('active');
             }
-
-            function getAvailablePlayers(positionType, currentPlayerName) {
-                let rusPosition = '';
-                if (positionType === 'GK') rusPosition = 'ВРТ';
-                else if (positionType === 'DEF') rusPosition = 'ЗАЩ';
-                else if (positionType === 'MID') rusPosition = 'ПЗЩ';
-                else if (positionType === 'FWD') rusPosition = 'НАП';
-                const occupiedPlayers = new Set();
-                for (let [pos, name] of fieldPositions.entries()) {
-                    if (pos !== currentPositionElement) occupiedPlayers.add(name);
-                }
-                let allFree = playersData.filter(p => !occupiedPlayers.has(p.name));
-                if (rusPosition === 'ВРТ') {
-                    return { same: allFree.filter(p => p.position === 'ВРТ'), other: [] };
-                }
-                const samePos = allFree.filter(p => p.position === rusPosition);
-                const otherPos = allFree.filter(p => p.position !== rusPosition && p.position !== 'ВРТ');
-                return { same: samePos, other: otherPos };
+            function getAvailablePlayers(positionType) {
+                let rusPos = '';
+                if (positionType === 'GK') rusPos = 'ВРТ';
+                else if (positionType === 'DEF') rusPos = 'ЗАЩ';
+                else if (positionType === 'MID') rusPos = 'ПЗЩ';
+                else if (positionType === 'FWD') rusPos = 'НАП';
+                const occupied = new Set();
+                for (let [pos, name] of fieldPositions.entries()) if (pos !== currentPositionElement) occupied.add(name);
+                const free = playersData.filter(p => !occupied.has(p.name));
+                if (rusPos === 'ВРТ') return { same: free.filter(p => p.position === 'ВРТ'), other: [] };
+                const same = free.filter(p => p.position === rusPos);
+                const other = free.filter(p => p.position !== rusPos && p.position !== 'ВРТ');
+                return { same, other };
             }
-
-            function renderPlayerList(available, positionType, currentPlayerName) {
+            function renderPlayerList(available, positionType) {
                 playersList.innerHTML = '';
-                if (positionType === 'GK') {
-                    available.same.forEach(player => { playersList.appendChild(createPlayerOption(player)); });
-                } else {
-                    available.same.forEach(player => { playersList.appendChild(createPlayerOption(player)); });
-                    if (available.same.length > 0 && available.other.length > 0) {
-                        const separator = document.createElement('div');
-                        separator.className = 'separator';
-                        separator.textContent = 'Другие позиции';
-                        playersList.appendChild(separator);
+                const addPlayer = (p) => playersList.appendChild(createPlayerOption(p));
+                if (positionType === 'GK') available.same.forEach(addPlayer);
+                else {
+                    available.same.forEach(addPlayer);
+                    if (available.same.length && available.other.length) {
+                        const sep = document.createElement('div'); sep.className = 'separator'; sep.textContent = 'Другие позиции'; playersList.appendChild(sep);
                     }
-                    available.other.forEach(player => { playersList.appendChild(createPlayerOption(player)); });
+                    available.other.forEach(addPlayer);
                 }
             }
-
             function createPlayerOption(player) {
                 const variant = player.variants[0];
                 let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
-                const div = document.createElement('div');
-                div.className = 'player-option';
-                div.dataset.name = player.name;
-                const img = document.createElement('img');
-                img.src = imagePath;
-                img.alt = player.name;
-                img.onerror = () => {
-                    img.style.display = 'none';
-                    div.style.backgroundColor = '#d3d3d3';
-                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
-                    nameSpan.style.color = 'white';
-                };
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'player-name';
-                nameSpan.textContent = player.name;
-                div.appendChild(img);
-                div.appendChild(nameSpan);
+                const div = document.createElement('div'); div.className = 'player-option';
+                const img = document.createElement('img'); img.src = imagePath; img.alt = player.name;
+                img.onerror = () => { img.style.display = 'none'; div.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
+                const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = player.name;
+                div.appendChild(img); div.appendChild(nameSpan);
                 div.addEventListener('click', () => selectPlayer(player.name, currentPositionElement));
                 return div;
             }
-
-            function selectPlayer(playerName, positionElement) {
-                if (fieldPositions.has(positionElement)) fieldPositions.delete(positionElement);
-                fieldPositions.set(positionElement, playerName);
-                updatePositionDisplay(positionElement, playerName);
+            function selectPlayer(playerName, posElem) {
+                if (fieldPositions.has(posElem)) fieldPositions.delete(posElem);
+                fieldPositions.set(posElem, playerName);
+                updatePositionDisplay(posElem, playerName);
                 updateOrderButtonVisibility();
                 closePanel();
             }
-
-            function updatePositionDisplay(positionElement, playerName) {
+            function updatePositionDisplay(posElem, playerName) {
                 const player = playersData.find(p => p.name === playerName);
                 if (!player) return;
                 const variant = player.variants[0];
                 let imagePath = variant.image ? variant.image.replace(/\\/g, '/') : '';
-                const oldImg = positionElement.querySelector('img');
-                if (oldImg) oldImg.remove();
-                const oldName = positionElement.querySelector('.player-name');
-                if (oldName) oldName.remove();
-                const img = document.createElement('img');
-                img.src = imagePath;
-                img.alt = playerName;
-                img.onerror = () => {
-                    img.style.display = 'none';
-                    positionElement.style.backgroundColor = '#d3d3d3';
-                    nameSpan.style.background = 'rgba(0,0,0,0.5)';
-                    nameSpan.style.color = 'white';
-                };
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'player-name';
-                nameSpan.textContent = playerName;
-                positionElement.appendChild(img);
-                positionElement.appendChild(nameSpan);
-                positionElement.classList.add('filled');
+                const oldImg = posElem.querySelector('img'); if (oldImg) oldImg.remove();
+                const oldName = posElem.querySelector('.player-name'); if (oldName) oldName.remove();
+                const img = document.createElement('img'); img.src = imagePath; img.alt = playerName;
+                img.onerror = () => { img.style.display = 'none'; posElem.style.backgroundColor = '#d3d3d3'; nameSpan.style.background = 'rgba(0,0,0,0.5)'; nameSpan.style.color = 'white'; };
+                const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = playerName;
+                posElem.appendChild(img); posElem.appendChild(nameSpan);
+                posElem.classList.add('filled');
             }
-
-            function closePanel() {
-                selectorPanel.classList.remove('active');
-                currentPositionElement = null;
-            }
-
+            function closePanel() { selectorPanel.classList.remove('active'); currentPositionElement = null; }
             function clearField() {
                 positions.forEach(pos => {
-                    const img = pos.querySelector('img');
-                    if (img) img.remove();
-                    const nameSpan = pos.querySelector('.player-name');
-                    if (nameSpan) nameSpan.remove();
+                    const img = pos.querySelector('img'); if (img) img.remove();
+                    const nameSpan = pos.querySelector('.player-name'); if (nameSpan) nameSpan.remove();
                     pos.classList.remove('filled');
                     fieldPositions.delete(pos);
                 });
@@ -790,70 +554,70 @@
                 closePanel();
             }
 
-            // Загрузка данных команды
             async function loadTeamData() {
                 try {
-                    const response = await fetch(jsonFileName);
-                    if (!response.ok) throw new Error(`Файл ${jsonFileName} не найден`);
-                    playersData = await response.json();
+                    const resp = await fetch(jsonFileName);
+                    if (!resp.ok) throw new Error('Файл не найден');
+                    playersData = await resp.json();
                     initApp();
-                } catch (error) {
-                    document.body.innerHTML += `<div style="color:red; text-align:center;">Ошибка загрузки данных: ${error.message}</div>`;
-                }
+                } catch(e) { document.body.innerHTML += `<div style="color:red;text-align:center;">Ошибка: ${e.message}</div>`; }
             }
 
             function initApp() {
-                positions.forEach(pos => { pos.addEventListener('click', () => openSelector(pos)); });
+                positions.forEach(p => p.addEventListener('click', () => openSelector(p)));
                 closeSelector.addEventListener('click', closePanel);
                 document.getElementById('clearButton').addEventListener('click', clearField);
-                orderButton.addEventListener('click', () => {
-                    if (!isTeamComplete()) return;
-                    showScreen('form');
-                });
+                orderButton.addEventListener('click', () => { if (isTeamComplete()) showScreen('form'); });
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToFormFromReview').addEventListener('click', () => showScreen('form'));
                 document.getElementById('editOrder').addEventListener('click', () => showScreen('form'));
                 document.getElementById('nextToConfirm').addEventListener('click', () => {
-                    if (!validateSurname()) return;
-                    if (!validateName()) return;
-                    if (!validatePatronymic()) return;
-                    if (!validatePhone()) return;
-                    if (!validateAddress()) return;
+                    if (!validateSurname() || !validateName() || !validatePhone() || !validateAddress()) return;
                     customerData.surname = document.getElementById('surname').value.trim();
                     customerData.name = document.getElementById('name').value.trim();
                     customerData.patronymic = document.getElementById('patronymic').value.trim();
                     customerData.phone = iti.getNumber();
                     customerData.address = document.getElementById('address').value.trim();
-                    // Генерируем order_id сразу, он понадобится для оплаты
-                    customerData.order_id = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+                    customerData.order_id = Math.floor(Math.random() * 9900) + 100;
                     showReviewScreen();
                 });
-                window.addEventListener('click', (e) => {
-                    if (!selectorPanel.contains(e.target) && !e.target.classList.contains('position')) {
-                        closePanel();
-                    }
-                });
+                window.addEventListener('click', (e) => { if (!selectorPanel.contains(e.target) && !e.target.classList.contains('position')) closePanel(); });
                 updateOrderButtonVisibility();
             }
 
             loadTeamData();
 
-            // ---------- ОПЛАТА (ВАРИАНТ Б) ----------
-            // Обработчик кнопки "Подтвердить и оплатить" на экране review
-            document.getElementById('confirmOrder').addEventListener('click', async () => {
-                // Проверяем, что order_id уже сгенерирован (должен быть на этапе review)
-                if (!customerData.order_id) {
-                    customerData.order_id = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+            // ---------- ОПЛАТА НА ОТДЕЛЬНОМ ЭКРАНЕ ----------
+            let paymentIntegrationInitialized = false;
+            const paymentContainer = document.getElementById('paymentContainer');
+
+            // Кнопка "Оплатить" на экране review
+            document.getElementById('payButton').addEventListener('click', async () => {
+                // Переходим на экран оплаты
+                showScreen('payment');
+                paymentContainer.innerHTML = '<div class="payment-loader">Загрузка платёжной формы...</div>';
+                // Запускаем оплату
+                await startPayment();
+            });
+
+            // Кнопка "Назад" с экрана оплаты
+            document.getElementById('backToReviewFromPayment').addEventListener('click', () => {
+                showScreen('review');
+                // Очищаем контейнер, чтобы при повторном входе форма создалась заново
+                paymentContainer.innerHTML = '';
+                paymentIntegrationInitialized = false;
+            });
+
+            async function startPayment() {
+                if (!window.PaymentIntegration) {
+                    alert('Платёжный модуль ещё не загружен, попробуйте через секунду');
+                    showScreen('review');
+                    return;
                 }
                 const orderId = customerData.order_id;
-                const amount = 1000; // сумма в копейках? В init-payment ожидается в рублях? В боте amount: 1000 – вероятно, 1000 рублей.
-                // Показываем контейнер для платежной формы
-                const paymentContainer = document.getElementById('paymentContainer');
-                paymentContainer.style.display = 'block';
-                paymentContainer.innerHTML = '<p style="text-align:center;">Загрузка платежной формы...</p>';
-                
-                // Создаем конфигурацию прямо сейчас, привязанную к конкретному order_id
+                const amount = 1000; // сумма в рублях (в бэкенде отправляется как есть)
+
                 const initConfig = {
                     terminalKey: '1775395377330DEMO',
                     product: 'eacq',
@@ -861,16 +625,13 @@
                         iframe: {
                             container: paymentContainer,
                             paymentStartCallback: async () => {
-                                // Вызываем ваш бэкенд для получения PaymentURL
-                                const response = await fetch('https://football-dreamteam.onrender.com/init-payment', {
+                                const resp = await fetch('https://football-dreamteam.onrender.com/init-payment', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ order_id: orderId, amount: amount })
                                 });
-                                const data = await response.json();
-                                if (!data.PaymentURL) {
-                                    throw new Error('Не удалось получить PaymentURL');
-                                }
+                                const data = await resp.json();
+                                if (!data.PaymentURL) throw new Error('Не удалось получить PaymentURL');
                                 return data.PaymentURL;
                             },
                             config: {
@@ -878,11 +639,14 @@
                                     changedCallback: async (status) => {
                                         console.log('Статус платежа:', status);
                                         if (status === 'SUCCESS') {
-                                            // Оплата успешна – отправляем заказ в бот и закрываем приложение
+                                            // Отправляем заказ боту и закрываем приложение через 2 секунды
                                             window.sendOrderToBot();
+                                            // Показываем сообщение об успехе (необязательно)
+                                            paymentContainer.innerHTML = '<div style="text-align:center; padding:40px; background:white; border-radius:20px;"><h3>✅ Оплата прошла успешно!</h3><p>Спасибо за заказ. Приложение закроется через несколько секунд...</p></div>';
                                         } else if (status === 'REJECTED' || status === 'CANCELED') {
-                                            alert('❌ Оплата не прошла. Попробуйте снова или выберите другой способ.');
-                                            paymentContainer.style.display = 'none';
+                                            alert('❌ Оплата не прошла. Попробуйте снова.');
+                                            showScreen('review');
+                                            paymentContainer.innerHTML = '';
                                         }
                                     }
                                 }
@@ -890,21 +654,16 @@
                         }
                     }
                 };
-                
                 try {
-                    // Инициализируем платежную интеграцию (если скрипт уже загружен, иначе ждем)
-                    if (!window.PaymentIntegration) {
-                        alert('Платёжный модуль ещё не загружен. Подождите секунду и нажмите снова.');
-                        return;
-                    }
                     await PaymentIntegration.init(initConfig);
-                    // После инициализации iframe откроется автоматически, так как передан container
+                    paymentIntegrationInitialized = true;
                 } catch (err) {
-                    console.error('Ошибка инициализации платежа:', err);
-                    alert('Не удалось запустить оплату: ' + (err.message || 'неизвестная ошибка'));
-                    paymentContainer.style.display = 'none';
+                    console.error(err);
+                    alert('Ошибка запуска оплаты: ' + (err.message || 'неизвестная ошибка'));
+                    showScreen('review');
+                    paymentContainer.innerHTML = '';
                 }
-            });
+            }
         })();
     </script>
 </body>
