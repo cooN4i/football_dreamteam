@@ -15,6 +15,8 @@
     <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <style>
         * { box-sizing: border-box; }
         body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f0f2f5; }
@@ -90,27 +92,32 @@
     <div id="confirmScreen" class="screen"><div class="success-message"><h2>Заказ успешно оформлен!</h2><p>Спасибо, ваш заказ принят.</p><button class="action-button order-button" id="finishButton">Готово</button></div></div>
 </div>
 
-<script src="https://integrationjs.t-static.ru/integration.js" async></script>
+<script src="https://integrationjs.tbank.ru/integration.js" onload="initTBank()" async></script>
 
 <script>
     let paymentIntegrationGlobal = null;
+    let paymentScriptLoaded = false;
 
+    // Функция инициализации T-Bank (вызывается после загрузки скрипта)
     function initTBank() {
+        if (paymentScriptLoaded) return;
         if (!window.PaymentIntegration) {
             setTimeout(initTBank, 200);
             return;
         }
+        paymentScriptLoaded = true;
         PaymentIntegration.init({
-            terminalKey: '1775395377330DEMO',
+            terminalKey: '1775395377330DEMO', // Ваш DEMO ключ
             product: 'eacq',
             features: { payment: {}, iframe: {} }
         }).then(integration => {
             paymentIntegrationGlobal = integration;
             console.log('✅ T-Bank оплата готова');
-        }).catch(err => console.error('❌ Ошибка:', err));
+        }).catch(err => console.error('❌ Ошибка инициализации оплаты:', err));
     }
-    window.addEventListener('load', initTBank);
+</script>
 
+<script>
     (function() {
         if (window.Telegram && Telegram.WebApp) Telegram.WebApp.ready();
         
@@ -171,30 +178,48 @@
         }
 
         async function startPayment(amount, orderId) {
-            if (!paymentIntegrationGlobal) { alert('Платёжная система загружается, подождите'); return false; }
+            if (!paymentIntegrationGlobal) {
+                alert('Платёжная система ещё не загружена, попробуйте через секунду');
+                return false;
+            }
             try {
+                const registerData = {
+                    TerminalKey: '1775395377330DEMO', // Ваш DEMO ключ
+                    Amount: amount * 100,
+                    OrderId: orderId.toString(),
+                    Description: `Заказ №${orderId} в конструкторе`,
+                    Recurrent: 'N',
+                    CustomerKey: `user_${customerData.phone || 'anon'}`
+                };
                 const resp = await fetch('https://securepay.tinkoff.ru/v2/Init', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        TerminalKey: '1775395377330DEMO',
-                        Password: '8GpcH_i4V!&j$4nb',
-                        Amount: amount * 100,
-                        OrderId: orderId.toString(),
-                        Description: `Заказ №${orderId}`,
-                        Recurrent: 'N',
-                        CustomerKey: `user_${customerData.phone || 'anon'}`
-                    })
+                    body: JSON.stringify(registerData)
                 });
                 const result = await resp.json();
-                if (!result.Success) throw new Error(result.Message);
-                const paymentResult = await paymentIntegrationGlobal.payment({ paymentId: result.PaymentId, frame: true });
-                if (paymentResult.success) {
-                    sendOrderToBot();
-                    return true;
+                console.log('Регистрация заказа:', result);
+                if (!result.Success) {
+                    throw new Error(result.Message || 'Ошибка регистрации заказа');
                 }
+                const paymentId = result.PaymentId;
+                // Открываем платёжную форму
+                const paymentResult = await paymentIntegrationGlobal.payment({ paymentId: paymentId, frame: true });
+                console.log('Результат открытия формы:', paymentResult);
+                if (paymentResult && paymentResult.success !== false) {
+                    // Если форма открылась, отправляем заказ боту
+                    sendOrderToBot();
+                    alert('Платёжная форма открыта. Пожалуйста, завершите оплату.');
+                    return true;
+                } else {
+                    console.error('Не удалось открыть форму оплаты', paymentResult);
+                    alert('Не удалось открыть платёжную форму. Проверьте консоль.');
+                    return false;
+                }
+            } catch(e) {
+                console.error('Ошибка:', e);
+                alert('Ошибка оплаты: ' + e.message);
                 return false;
-            } catch(e) { alert('Ошибка оплаты: '+e.message); return false; }
+            }
         }
 
         function showReviewScreen() {
