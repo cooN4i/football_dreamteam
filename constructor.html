@@ -15,8 +15,8 @@
     <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/css/suggestions.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@21.12.0/dist/js/jquery.suggestions.min.js"></script>
     <!-- T-Bank Payment Integration -->
-    <script src="https://integrationjs.t-static.ru/integration.js" onload="onPaymentIntegrationLoad()" async></script>
-    <!-- Отключаем кеширование -->
+    <script src="https://integrationjs.t-static.ru/integration.js" async></script>
+
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -45,7 +45,6 @@
         h2 {
             margin-top: 0;
         }
-
         /* Поле */
         .field {
             width: 100%;
@@ -127,7 +126,6 @@
             color: #333;
             text-align: center;
         }
-
         /* Панель выбора игроков */
         .selector-panel {
             display: none;
@@ -215,7 +213,6 @@
             color: #666;
             margin: 8px 0;
         }
-
         /* Стили для формы */
         .form-container {
             background: white;
@@ -315,8 +312,7 @@
         #constructorScreen {
             padding-bottom: 120px;
         }
-
-        /* === Стили для экрана оплаты === */
+        /* Стили для экрана оплаты */
         #paymentScreen .form-container {
             text-align: center;
         }
@@ -490,7 +486,7 @@
 
             const jsonFileName = team.toLowerCase() + '.json';
             let playersData = [];
-            const fieldPositions = new Map();
+            const fieldPositions = new Map(); 
 
             let customerData = {
                 surname: '',
@@ -515,16 +511,38 @@
             let currentPositionElement = null;
             const orderButton = document.getElementById('orderButton');
 
-            // T-Bank Integration
-            const TERMINAL_KEY = "1775395377330DEMO";   // ←←← ЗАМЕНИ НА СВОЙ
+            // ================== T-BANK ==================
+            const TERMINAL_KEY = "1775395377330DEMO";   // ←←← ЗАМЕНИ НА СВОЙ РЕАЛЬНЫЙ КЛЮЧ
 
-            function onPaymentIntegrationLoad() {
-                console.log("✅ T-Bank Integration.js загружен");
+            function waitForTBank() {
+                return new Promise(resolve => {
+                    if (window.PaymentIntegration) {
+                        resolve();
+                        return;
+                    }
+                    const interval = setInterval(() => {
+                        if (window.PaymentIntegration) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => {
+                        clearInterval(interval);
+                        resolve();
+                    }, 4000);
+                });
             }
 
-            function initPaymentWidget() {
+            async function initPaymentWidget() {
                 document.getElementById('payTeam').textContent = team;
-                document.getElementById('paymentStatus').innerHTML = '';
+                document.getElementById('paymentStatus').innerHTML = 'Загрузка формы оплаты...';
+
+                await waitForTBank();
+
+                if (!window.PaymentIntegration) {
+                    document.getElementById('paymentStatus').innerHTML = '<span style="color:red">Не удалось подключиться к системе оплаты</span>';
+                    return;
+                }
 
                 const initConfig = {
                     terminalKey: TERMINAL_KEY,
@@ -533,10 +551,10 @@
                         payment: {
                             container: document.getElementById('paymentContainer'),
                             paymentStartCallback: async () => {
-                                document.getElementById('paymentStatus').innerHTML = 'Запуск оплаты...';
+                                document.getElementById('paymentStatus').innerHTML = 'Подготовка платежа...';
                                 const payload = {
                                     orderId: customerData.order_id,
-                                    amount: 99000, // 990 рублей в копейках
+                                    amount: 99000,
                                     description: `Заказ состава ${team} №${customerData.order_id}`,
                                     customer: customerData
                                 };
@@ -549,7 +567,7 @@
                                     });
                                     const result = await res.json();
                                     if (result.PaymentURL) {
-                                        document.getElementById('paymentStatus').innerHTML = 'Перенаправляем на оплату...';
+                                        document.getElementById('paymentStatus').innerHTML = 'Переход к оплате...';
                                         return result.PaymentURL;
                                     } else {
                                         throw new Error(result.error || 'Не получена ссылка оплаты');
@@ -563,13 +581,15 @@
                     }
                 };
 
-                PaymentIntegration.init(initConfig).catch(err => {
+                try {
+                    await PaymentIntegration.init(initConfig);
+                } catch (err) {
                     console.error(err);
-                    document.getElementById('paymentStatus').innerHTML = '<span style="color:red">Не удалось загрузить форму оплаты</span>';
-                });
+                    document.getElementById('paymentStatus').innerHTML = '<span style="color:red">Ошибка инициализации оплаты</span>';
+                }
             }
 
-            // ====================== ТВОИ ОРИГИНАЛЬНЫЕ ФУНКЦИИ (без изменений) ======================
+            // ====================== ТВОИ ОРИГИНАЛЬНЫЕ ФУНКЦИИ ======================
             function showReviewScreen() {
                 const reviewContent = document.getElementById('reviewContent');
                 const composition = {
@@ -683,7 +703,6 @@
                     document.getElementById('phone').value = customerData.phone;
                     document.getElementById('address').value = customerData.address;
 
-                    // Создаём iti только один раз
                     if (!iti) {
                         const input = document.querySelector('#phone');
                         iti = window.intlTelInput(input, {
@@ -731,7 +750,6 @@
             function validatePhone() {
                 if (!iti) return false;
                 const errorElement = document.getElementById('phoneError');
-
                 if (iti.isValidNumber()) {
                     errorElement.classList.remove('visible');
                     return true;
@@ -804,7 +822,6 @@
                     showScreen('form');
                 });
 
-                // Навигация
                 document.getElementById('backFromForm').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToConstructor').addEventListener('click', () => showScreen('constructor'));
                 document.getElementById('backToForm').addEventListener('click', () => showScreen('form'));
@@ -815,7 +832,6 @@
                     showScreen('form');
                 });
 
-                // Изменено: теперь при нажатии "Подтвердить" переходим на экран оплаты
                 document.getElementById('confirmOrder').addEventListener('click', () => {
                     const platform = Telegram.WebApp.platform || '';
                     if (platform === 'web') {
@@ -823,7 +839,7 @@
                         Telegram.WebApp.close();
                         return;
                     }
-                    // Переход на экран оплаты
+                    currentOrderId = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
                     showScreen('payment');
                     initPaymentWidget();
                 });
@@ -858,7 +874,7 @@
                 updateOrderButtonVisibility();
             }
 
-            // --- Функции конструктора (полностью как у тебя было) ---
+            // --- Функции конструктора ---
             function openSelector(positionElement) {
                 const positionType = positionElement.dataset.position;
                 const currentPlayer = fieldPositions.get(positionElement);
@@ -886,7 +902,6 @@
                         occupiedPlayers.add(name);
                     }
                 }
-
                 let allFree = playersData.filter(p => !occupiedPlayers.has(p.name));
 
                 if (rusPosition === 'ВРТ') {
