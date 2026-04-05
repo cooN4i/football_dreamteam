@@ -441,7 +441,7 @@
                 </div>
             </div>
         </div>
-        <!-- Шаг 3: Финальное подтверждение (больше не используется, но оставлен для совместимости) -->
+        <!-- Шаг 3: Финальное подтверждение -->
         <div id="confirmScreen" class="screen">
             <div class="success-message">
                 <h2>Заказ успешно оформлен!</h2>
@@ -453,6 +453,31 @@
 
     <!-- Скрипт интеграции T-Bank -->
     <script src="https://integrationjs.t-static.ru/integration.js" onload="onPaymentIntegrationLoad()" async></script>
+
+    <script>
+        // Глобальная переменная для платежной интеграции
+        let paymentIntegrationGlobal = null;
+        
+        function onPaymentIntegrationLoad() {
+            const initConfig = {
+                terminalKey: '1775395377330DEMO', // Замените на ваш ключ
+                product: 'eacq',
+                features: {
+                    payment: {},
+                    iframe: {}
+                }
+            };
+
+            PaymentIntegration.init(initConfig)
+                .then((integration) => {
+                    paymentIntegrationGlobal = integration;
+                    console.log('✅ T-Bank оплата готова');
+                })
+                .catch((error) => {
+                    console.error('❌ Ошибка инициализации оплаты:', error);
+                });
+        }
+    </script>
 
     <script>
         (function() {
@@ -490,41 +515,15 @@
             
             let currentPositionElement = null;
             let autoCloseInterval = null;
-            let orderSent = false;  // ← ЭТО БЫЛО ПРОПУЩЕНО
+            let orderSent = false;
             const orderButton = document.getElementById('orderButton');
-
-            // ========== ПЛАТЁЖНАЯ ИНТЕГРАЦИЯ T-BANK ==========
-            let paymentIntegration = null;
-
-            // Функция, которая вызовется после загрузки скрипта T-Bank
-            function onPaymentIntegrationLoad() {
-                // ВАЖНО: ЗАМЕНИТЕ 'YOUR_TERMINAL_KEY' НА ВАШ НАСТОЯЩИЙ TERMINAL KEY ИЗ ЛИЧНОГО КАБИНЕТА T-BANK
-                const initConfig = {
-                    terminalKey: 'YOUR_TERMINAL_KEY', // <-- СЮДА ВАШ КЛЮЧ
-                    product: 'eacq',
-                    features: {
-                        payment: {},     // Включаем модуль кнопок оплаты
-                        iframe: {}       // Включаем возможность открыть форму в iframe
-                    }
-                };
-
-                PaymentIntegration.init(initConfig)
-                    .then((integration) => {
-                        paymentIntegration = integration;
-                        console.log('✅ T-Bank оплата готова');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Ошибка инициализации оплаты:', error);
-                    });
-            }
 
             // Функция для расчёта общей стоимости заказа
             function calculateOrderTotal() {
-                // Фиксированная стоимость заказа: 1990 рублей
-                return 1990;
+                return 1990; // Фиксированная стоимость
             }
 
-            // Функция для отправки данных заказа боту (через Telegram WebApp)
+            // Функция для отправки данных заказа боту
             function sendOrderToBot() {
                 if (orderSent) return;
                 if (!window.Telegram || !Telegram.WebApp) {
@@ -572,27 +571,21 @@
 
             // Функция для запуска оплаты
             async function startPayment(amount, orderId) {
-                if (!paymentIntegration) {
+                if (!paymentIntegrationGlobal) {
                     alert('Платёжная система ещё не загружена, попробуйте через секунду');
                     return false;
                 }
 
-                // ВАЖНО: ЗАМЕНИТЕ 'YOUR_TERMINAL_KEY' И 'YOUR_PASSWORD' НА ВАШИ ДАННЫЕ
-                // Если пароль не требуется, удалите строку Password
                 const registerData = {
-                    TerminalKey: 'YOUR_TERMINAL_KEY', // <-- СЮДА ВАШ КЛЮЧ
-                    Amount: amount * 100,              // Сумма в копейках (1990 руб = 199000 копеек)
+                    TerminalKey: '1775395377330DEMO', // Замените на ваш ключ
+                    Amount: amount * 100,
                     OrderId: orderId.toString(),
                     Description: `Заказ №${orderId} в конструкторе "Футбольная команда"`,
                     Recurrent: 'N',
                     CustomerKey: `user_${customerData.telegram_id || customerData.phone || 'anon'}`
                 };
 
-                // Если у вас есть пароль от терминала, раскомментируйте следующую строку:
-                // registerData.Password = 'YOUR_PASSWORD';
-
                 try {
-                    // 1. Регистрируем заказ в T-Bank, чтобы получить PaymentId
                     const registerResponse = await fetch('https://securepay.tinkoff.ru/v2/Init', {
                         method: 'POST',
                         headers: {
@@ -610,16 +603,14 @@
 
                     const paymentId = registerResult.PaymentId;
 
-                    // 2. Открываем платёжную форму T-Bank
-                    const result = await paymentIntegration.payment({
+                    const result = await paymentIntegrationGlobal.payment({
                         paymentId: paymentId,
-                        frame: true // Открыть в iframe (рекомендуется)
+                        frame: true
                     });
 
                     console.log('Результат оплаты:', result);
                     
                     if (result.success) {
-                        // Оплата успешна — отправляем заказ боту
                         sendOrderToBot();
                         return true;
                     } else {
@@ -632,8 +623,6 @@
                     return false;
                 }
             }
-
-            // ========== ОСТАЛЬНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
 
             function showReviewScreen() {
                 const reviewContent = document.getElementById('reviewContent');
@@ -850,19 +839,15 @@
                         return;
                     }
 
-                    // Рассчитываем сумму и берём ID заказа
-                    const totalAmount = calculateOrderTotal(); // 1990 рублей
+                    const totalAmount = calculateOrderTotal();
                     const orderId = customerData.order_id;
 
-                    // Запускаем оплату
                     const paymentSuccess = await startPayment(totalAmount, orderId);
                     
                     if (paymentSuccess) {
-                        // Оплата прошла успешно, заказ отправлен внутри startPayment
                         alert('Оплата прошла успешно! Спасибо за заказ.');
                         Telegram.WebApp.close();
                     } else {
-                        // Оплата не удалась или была отменена
                         alert('Оплата не была завершена. Заказ не оформлен.');
                     }
                 });
