@@ -489,11 +489,12 @@
             const closeSelector = document.getElementById('closeSelector');
             
             let currentPositionElement = null;
+            let autoCloseInterval = null;
+            let orderSent = false;  // ← ЭТО БЫЛО ПРОПУЩЕНО
             const orderButton = document.getElementById('orderButton');
 
             // ========== ПЛАТЁЖНАЯ ИНТЕГРАЦИЯ T-BANK ==========
             let paymentIntegration = null;
-            let orderSent = false; // Флаг для предотвращения повторной отправки заказа
 
             // Функция, которая вызовется после загрузки скрипта T-Bank
             function onPaymentIntegrationLoad() {
@@ -563,7 +564,6 @@
 
                 try {
                     Telegram.WebApp.sendData(realData);
-                    // Приложение закроется после успешной оплаты (вызовется позже)
                 } catch (e) {
                     alert('❌ Ошибка отправки: ' + e.message);
                     orderSent = false;
