@@ -434,18 +434,15 @@
         
             <div class="form-container">
                 <h2>Проверьте заказ</h2>
-        
                 <div id="reviewContent"></div>
-        
                 <div class="button-group">
                     <button class="action-button secondary-button" id="editOrder">Редактировать</button>
-                    <button class="action-button order-button" id="confirmOrder">Подтвердить</button>
+                    <button class="action-button order-button" id="confirmOrder">Подтвердить и оплатить</button>
                 </div>
             </div>
         </div>
         <!-- Шаг 3: Финальное подтверждение (больше не используется, но оставлен для совместимости) -->
         <div id="confirmScreen" class="screen">
-            <button class="back-button" id="backToForm">← Назад к контактам</button>
             <div class="success-message">
                 <h2>Заказ успешно оформлен!</h2>
                 <p>Спасибо, ваш заказ принят.</p>
@@ -453,6 +450,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Скрипт интеграции T-Bank -->
+    <script src="https://integrationjs.t-static.ru/integration.js" onload="onPaymentIntegrationLoad()" async></script>
 
     <script>
         (function() {
@@ -491,75 +491,47 @@
             let currentPositionElement = null;
             const orderButton = document.getElementById('orderButton');
 
-            function showReviewScreen() {
-                const reviewContent = document.getElementById('reviewContent');
-            
-                const composition = {
-                    order_id: customerData.order_id,
-                    team: team,
-                    customer: customerData,
-                    players: []
-                };
-            
-                positionWrappers.forEach(wrapper => {
-                    const positionDiv = wrapper.querySelector('.position');
-                    const labelDiv = wrapper.querySelector('.position-label');
-            
-                    const playerName = fieldPositions.get(positionDiv);
-            
-                    if (playerName) {
-                        composition.players.push({
-                            position: labelDiv.textContent,
-                            name: playerName
-                        });
+            // ========== ПЛАТЁЖНАЯ ИНТЕГРАЦИЯ T-BANK ==========
+            let paymentIntegration = null;
+            let orderSent = false; // Флаг для предотвращения повторной отправки заказа
+
+            // Функция, которая вызовется после загрузки скрипта T-Bank
+            function onPaymentIntegrationLoad() {
+                // ВАЖНО: ЗАМЕНИТЕ 'YOUR_TERMINAL_KEY' НА ВАШ НАСТОЯЩИЙ TERMINAL KEY ИЗ ЛИЧНОГО КАБИНЕТА T-BANK
+                const initConfig = {
+                    terminalKey: 'YOUR_TERMINAL_KEY', // <-- СЮДА ВАШ КЛЮЧ
+                    product: 'eacq',
+                    features: {
+                        payment: {},     // Включаем модуль кнопок оплаты
+                        iframe: {}       // Включаем возможность открыть форму в iframe
                     }
-                });
-            
-                let html = `
-                    <h3>Команда: ${composition.team}</h3>
-            
-                    <h4>Клиент:</h4>
-                    <p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p>
-                    <p>${customerData.phone}</p>
-                    <p>${customerData.address}</p>
-            
-                    <h4>Состав:</h4>
-                    <ul>
-                `;
-            
-                composition.players.forEach(p => {
-                    html += `<li>${p.position}: ${p.name}</li>`;
-                });
-            
-                html += `</ul>`;
-            
-                reviewContent.innerHTML = html;
-            
-                showScreen('review');
+                };
+
+                PaymentIntegration.init(initConfig)
+                    .then((integration) => {
+                        paymentIntegration = integration;
+                        console.log('✅ T-Bank оплата готова');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Ошибка инициализации оплаты:', error);
+                    });
             }
 
-            function getTelegramUser() {
-                if (!window.Telegram || !Telegram.WebApp) {
-                    console.warn("Telegram WebApp недоступен");
-                    return null;
-                }
-
-                const unsafe = Telegram.WebApp.initDataUnsafe;
-                if (unsafe && unsafe.user) {
-                    console.log("✅ User получен:", unsafe.user);
-                    return unsafe.user;
-                }
-
-                console.warn("⚠️ Нет user в initDataUnsafe");
-                return null;
+            // Функция для расчёта общей стоимости заказа
+            function calculateOrderTotal() {
+                // Фиксированная стоимость заказа: 1990 рублей
+                return 1990;
             }
-            
+
+            // Функция для отправки данных заказа боту (через Telegram WebApp)
             function sendOrderToBot() {
+                if (orderSent) return;
                 if (!window.Telegram || !Telegram.WebApp) {
                     alert("❌ Telegram WebApp недоступен");
                     return;
                 }
 
+                orderSent = true;
                 const tgUser = getTelegramUser();
 
                 const composition = {
@@ -587,15 +559,141 @@
                 });
 
                 const realData = JSON.stringify(composition);
-                console.log('Отправляем данные:', realData);
+                console.log('Отправляем данные заказа боту:', realData);
 
                 try {
                     Telegram.WebApp.sendData(realData);
-                    // После отправки сразу закрываем приложение
-                    Telegram.WebApp.close();
+                    // Приложение закроется после успешной оплаты (вызовется позже)
                 } catch (e) {
                     alert('❌ Ошибка отправки: ' + e.message);
+                    orderSent = false;
                 }
+            }
+
+            // Функция для запуска оплаты
+            async function startPayment(amount, orderId) {
+                if (!paymentIntegration) {
+                    alert('Платёжная система ещё не загружена, попробуйте через секунду');
+                    return false;
+                }
+
+                // ВАЖНО: ЗАМЕНИТЕ 'YOUR_TERMINAL_KEY' И 'YOUR_PASSWORD' НА ВАШИ ДАННЫЕ
+                // Если пароль не требуется, удалите строку Password
+                const registerData = {
+                    TerminalKey: 'YOUR_TERMINAL_KEY', // <-- СЮДА ВАШ КЛЮЧ
+                    Amount: amount * 100,              // Сумма в копейках (1990 руб = 199000 копеек)
+                    OrderId: orderId.toString(),
+                    Description: `Заказ №${orderId} в конструкторе "Футбольная команда"`,
+                    Recurrent: 'N',
+                    CustomerKey: `user_${customerData.telegram_id || customerData.phone || 'anon'}`
+                };
+
+                // Если у вас есть пароль от терминала, раскомментируйте следующую строку:
+                // registerData.Password = 'YOUR_PASSWORD';
+
+                try {
+                    // 1. Регистрируем заказ в T-Bank, чтобы получить PaymentId
+                    const registerResponse = await fetch('https://securepay.tinkoff.ru/v2/Init', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(registerData)
+                    });
+
+                    const registerResult = await registerResponse.json();
+                    console.log('Регистрация заказа:', registerResult);
+                    
+                    if (!registerResult.Success) {
+                        throw new Error(registerResult.Message || 'Ошибка регистрации заказа');
+                    }
+
+                    const paymentId = registerResult.PaymentId;
+
+                    // 2. Открываем платёжную форму T-Bank
+                    const result = await paymentIntegration.payment({
+                        paymentId: paymentId,
+                        frame: true // Открыть в iframe (рекомендуется)
+                    });
+
+                    console.log('Результат оплаты:', result);
+                    
+                    if (result.success) {
+                        // Оплата успешна — отправляем заказ боту
+                        sendOrderToBot();
+                        return true;
+                    } else {
+                        console.error('Оплата не удалась', result);
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Ошибка при оплате:', error);
+                    alert('Не удалось провести оплату. Попробуйте позже.\n' + (error.message || ''));
+                    return false;
+                }
+            }
+
+            // ========== ОСТАЛЬНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
+
+            function showReviewScreen() {
+                const reviewContent = document.getElementById('reviewContent');
+            
+                const composition = {
+                    order_id: customerData.order_id,
+                    team: team,
+                    customer: customerData,
+                    players: []
+                };
+            
+                positionWrappers.forEach(wrapper => {
+                    const positionDiv = wrapper.querySelector('.position');
+                    const labelDiv = wrapper.querySelector('.position-label');
+                    const playerName = fieldPositions.get(positionDiv);
+                    if (playerName) {
+                        composition.players.push({
+                            position: labelDiv.textContent,
+                            name: playerName
+                        });
+                    }
+                });
+            
+                let html = `
+                    <h3>Команда: ${composition.team}</h3>
+                    <h4>Клиент:</h4>
+                    <p>${customerData.surname} ${customerData.name} ${customerData.patronymic}</p>
+                    <p>${customerData.phone}</p>
+                    <p>${customerData.address}</p>
+                    <h4>Состав:</h4>
+                    <ul>
+                `;
+            
+                composition.players.forEach(p => {
+                    html += `<li>${p.position}: ${p.name}</li>`;
+                });
+            
+                html += `</ul>
+                    <hr>
+                    <p><strong>Сумма к оплате: 1990 рублей</strong></p>
+                `;
+            
+                reviewContent.innerHTML = html;
+                showScreen('review');
+            }
+
+            function getTelegramUser() {
+                if (!window.Telegram || !Telegram.WebApp) {
+                    console.warn("Telegram WebApp недоступен");
+                    return null;
+                }
+
+                const unsafe = Telegram.WebApp.initDataUnsafe;
+                if (unsafe && unsafe.user) {
+                    console.log("✅ User получен:", unsafe.user);
+                    return unsafe.user;
+                }
+
+                console.warn("⚠️ Нет user в initDataUnsafe");
+                return null;
             }
 
             function showScreen(screenName) {
@@ -608,16 +706,13 @@
             
                 if (screenName === 'constructor') {
                     constructorScreen.classList.add('active');
-            
                 } else if (screenName === 'form') {
                     formScreen.classList.add('active');
-            
                     document.getElementById('surname').value = customerData.surname;
                     document.getElementById('name').value = customerData.name;
                     document.getElementById('patronymic').value = customerData.patronymic;
                     document.getElementById('phone').value = customerData.phone;
                     document.getElementById('address').value = customerData.address;
-            
                     if (!iti) {
                         const input = document.querySelector('#phone');
                         iti = window.intlTelInput(input, {
@@ -627,12 +722,9 @@
                             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
                         });
                     }
-            
                     initDaData();
-            
                 } else if (screenName === 'review') {
                     if (reviewScreen) reviewScreen.classList.add('active');
-            
                 } else if (screenName === 'confirm') {
                     confirmScreen.classList.add('active');
                 }
@@ -666,7 +758,6 @@
             function validatePhone() {
                 if (!iti) return false;
                 const errorElement = document.getElementById('phoneError');
-                
                 if (iti.isValidNumber()) {
                     errorElement.classList.remove('visible');
                     return true;
@@ -750,8 +841,8 @@
                     showScreen('form');
                 });
                 
-                // Обработчик подтверждения заказа: отправляем данные и закрываем приложение
-                document.getElementById('confirmOrder').addEventListener('click', () => {
+                // Обработчик подтверждения заказа: запускаем оплату
+                document.getElementById('confirmOrder').addEventListener('click', async () => {
                     const platform = Telegram.WebApp.platform || '';
                     if (platform === 'web') {
                         alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
@@ -759,7 +850,21 @@
                         return;
                     }
 
-                    sendOrderToBot(); // отправляет данные и закрывает приложение
+                    // Рассчитываем сумму и берём ID заказа
+                    const totalAmount = calculateOrderTotal(); // 1990 рублей
+                    const orderId = customerData.order_id;
+
+                    // Запускаем оплату
+                    const paymentSuccess = await startPayment(totalAmount, orderId);
+                    
+                    if (paymentSuccess) {
+                        // Оплата прошла успешно, заказ отправлен внутри startPayment
+                        alert('Оплата прошла успешно! Спасибо за заказ.');
+                        Telegram.WebApp.close();
+                    } else {
+                        // Оплата не удалась или была отменена
+                        alert('Оплата не была завершена. Заказ не оформлен.');
+                    }
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
@@ -767,7 +872,6 @@
                 });
                 
                 document.getElementById('nextToConfirm').addEventListener('click', () => {
-
                     if (!validateSurname()) return;
                     if (!validateName()) return;
                     if (!validatePatronymic()) return;
