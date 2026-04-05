@@ -467,14 +467,14 @@
             let playersData = [];
             const fieldPositions = new Map(); // key: DOM position, value: player name
             
-            let customerData = {
+            window.customerData = {
                 surname: '',
                 name: '',
                 patronymic: '',
                 phone: '',
                 address: ''
             };
-            
+            const customerData = window.customerData;
             let iti = null;
 
             const constructorScreen = document.getElementById('constructorScreen');
@@ -554,7 +554,7 @@
                 return null;
             }
             
-            function sendOrderToBot() {
+            window.sendOrderToBot = function() {
                 if (!window.Telegram || !Telegram.WebApp) {
                     alert("❌ Telegram WebApp недоступен");
                     return;
@@ -592,7 +592,9 @@
                 try {
                     Telegram.WebApp.sendData(realData);
                     // После отправки сразу закрываем приложение
-                    Telegram.WebApp.close();
+                    setTimeout(() => {
+                        Telegram.WebApp.close();
+                    }, 300);
                 } catch (e) {
                     alert('❌ Ошибка отправки: ' + e.message);
                 }
@@ -751,15 +753,28 @@
                 });
                 
                 // Обработчик подтверждения заказа: отправляем данные и закрываем приложение
-                document.getElementById('confirmOrder').addEventListener('click', () => {
+                document.getElementById('confirmOrder').addEventListener('click', async () => {
+                    if (!paymentInitialized) {
+                        alert("❌ Платёж ещё не загрузился");
+                        return;
+                    }
+
                     const platform = Telegram.WebApp.platform || '';
                     if (platform === 'web') {
-                        alert('❌ Заказ можно оформить только через мобильное или десктопное приложение Telegram!\n\nПожалуйста, откройте бота в приложении (не в браузере web.telegram.org).');
+                        alert('❌ Открой в приложении Telegram');
                         Telegram.WebApp.close();
                         return;
                     }
 
-                    sendOrderToBot(); // отправляет данные и закрывает приложение
+                    currentOrder = {
+                        order_id: customerData.order_id,
+                        amount: 1000
+                    };
+
+                    document.getElementById('paymentContainer').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    PaymentIntegration.start();
                 });
                 
                 document.getElementById('backToFormFromReview').addEventListener('click', () => {
@@ -955,7 +970,76 @@
             }
 
             loadTeamData();
+        window.fieldPositions = fieldPositions;
+        window.positionWrappers = positionWrappers;
+        window.team = team;
         })();
+    </script>
+    <div id="paymentContainer" style="margin-top:20px;"></div>
+
+    <script>
+    let paymentInitialized = false;
+    let currentOrder = null;
+    </script>
+
+    <script src="https://integrationjs.tbank.ru/integration.js" onload="onPaymentIntegrationLoad()" async></script>
+
+    <script>
+    const initConfig = {
+        terminalKey: '1775395377330DEMO',
+        product: 'eacq',
+        features: {
+            iframe: {
+                container: document.getElementById('paymentContainer'),
+
+                config: {
+                    status: {
+                        changedCallback: async (status) => {
+                            console.log("💳 STATUS:", status);
+
+                            if (status === 'SUCCESS') {
+                                window.sendOrderToBot();
+                            }
+
+                            if (status === 'REJECTED' || status === 'CANCELED') {
+                                alert("❌ Оплата не прошла");
+                            }
+                        }
+                    }
+                },
+
+                paymentStartCallback: async () => {
+
+                    if (!currentOrder) {
+                        alert("❌ Заказ не сформирован");
+                        throw new Error("No order");
+                    }
+
+                    const res = await fetch('https://football-dreamteam.onrender.com/init-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(currentOrder)
+                    });
+
+                    const data = await res.json();
+
+                    if (!data.PaymentURL) {
+                        throw new Error("Нет PaymentURL");
+                    }
+
+                    return data.PaymentURL;
+                }
+            }
+        }
+    };
+
+    function onPaymentIntegrationLoad() {
+        PaymentIntegration.init(initConfig)
+            .then(() => {
+                paymentInitialized = true;
+            })
+            .catch(console.error);
+    }
     </script>
 </body>
 </html>
