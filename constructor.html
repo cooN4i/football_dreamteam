@@ -692,13 +692,6 @@
                             autoPlaceholder: "polite",
                             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
                         });
-
-                        // Ждём загрузки utils.js перед первой валидацией
-                        iti.promise.then(() => {
-                            console.log("✅ intl-tel-input utils загружен");
-                        }).catch(() => {
-                            console.warn("⚠️ Не удалось загрузить utils.js");
-                        });
                     }
                     initDaData();
                 } else if (screenName === 'review') {
@@ -737,29 +730,12 @@
 
             function validatePhone() {
                 if (!iti) return false;
-                
                 const errorElement = document.getElementById('phoneError');
-                const number = iti.getNumber(); // полное международное представление
-
-                if (number.length < 10) {
-                    errorElement.textContent = "Слишком короткий номер";
-                    errorElement.classList.add('visible');
-                    return false;
-                }
 
                 if (iti.isValidNumber()) {
                     errorElement.classList.remove('visible');
                     return true;
                 } else {
-                    const errorCode = iti.getValidationError();
-                    let msg = "Неверный номер телефона";
-                    
-                    // Можно добавить более точные сообщения
-                    if (errorCode === 1) msg = "Неверный код страны";
-                    else if (errorCode === 2) msg = "Слишком короткий номер";
-                    else if (errorCode === 3) msg = "Слишком длинный номер";
-                    
-                    errorElement.textContent = msg;
                     errorElement.classList.add('visible');
                     return false;
                 }
