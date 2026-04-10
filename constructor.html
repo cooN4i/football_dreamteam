@@ -484,6 +484,7 @@
                 renderPlayerList(available, positionType);
                 currentPositionElement = positionElement;
                 selectorPanel.classList.add('active');
+                selectorPanel.scrollTop = 0;
             }
             function getAvailablePlayers(positionType) {
                 let rusPos = '';
@@ -596,7 +597,7 @@
             document.getElementById('payButton').addEventListener('click', async () => {
                 // Переходим на экран оплаты
                 showScreen('payment');
-                paymentContainer.innerHTML = '<div class="payment-loader">Загрузка платёжной формы...</div>';
+                // paymentContainer.innerHTML = '<div class="payment-loader">Загрузка платёжной формы...</div>';
                 // Запускаем оплату
                 await startPayment();
             });
