@@ -628,7 +628,11 @@
                                 const resp = await fetch('https://football-dreamteam.onrender.com/init-payment', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ order_id: orderId, amount: amount })
+                                    body: JSON.stringify({
+                                        order_id: orderId,
+                                        amount: amount,
+                                        phone: customerData.phone
+                                    })
                                 });
                                 const data = await resp.json();
                                 if (!data.PaymentURL) throw new Error('Не удалось получить PaymentURL');

@@ -34,10 +34,18 @@ logger = logging.getLogger(__name__)
 
 
 def generate_token(data: dict, password: str):
-    data_for_token = data.copy()
+    data_for_token = {}
+
+    for k, v in data.items():
+        if isinstance(v, dict) or isinstance(v, list):
+            continue
+        data_for_token[k] = v
+
     data_for_token["Password"] = password
+
     sorted_items = sorted(data_for_token.items())
     concat = "".join(str(v) for k, v in sorted_items)
+
     return hashlib.sha256(concat.encode()).hexdigest()
 
 
@@ -58,11 +66,27 @@ def init_payment():
     order_id = body.get("order_id")
     amount = body.get("amount", 1000)
 
+    customer_phone = body.get("phone") or "79999999999"
+
     payload = {
         "TerminalKey": TERMINAL_KEY,
         "Amount": amount,
         "OrderId": str(order_id),
         "Description": "Football Dream Team",
+
+        "Receipt": {
+            "Phone": customer_phone,
+            "Taxation": "usn_income",
+            "Items": [
+                {
+                    "Name": "Футбольный состав",
+                    "Price": amount,
+                    "Quantity": 1,
+                    "Amount": amount,
+                    "Tax": "none"
+                }
+            ]
+        }
     }
     payload["Token"] = generate_token(payload, PASSWORD)
 
