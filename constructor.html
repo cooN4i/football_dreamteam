@@ -332,7 +332,7 @@
             const fieldPositions = new Map();
             let currentPositionElement = null;
             let iti = null;
-
+            let paymentInProgress = false;
             window.customerData = {
                 surname: '', name: '', patronymic: '', phone: '', address: '', order_id: null
             };
@@ -595,22 +595,39 @@
 
             // Кнопка "Оплатить" на экране review
             document.getElementById('payButton').addEventListener('click', async () => {
-                // Переходим на экран оплаты
+                if (paymentInProgress) return;
+
+                paymentInProgress = true;
                 showScreen('payment');
-                // paymentContainer.innerHTML = '<div class="payment-loader">Загрузка платёжной формы...</div>';
-                // Запускаем оплату
-                await startPayment();
+
+                try {
+                    await startPayment();
+                } finally {
+                    paymentInProgress = false;
+                }
             });
 
             // Кнопка "Назад" с экрана оплаты
             document.getElementById('backToReviewFromPayment').addEventListener('click', () => {
+                resetPaymentIntegration();
                 showScreen('review');
-                // Очищаем контейнер, чтобы при повторном входе форма создалась заново
-                paymentContainer.innerHTML = '';
-                paymentIntegrationInitialized = false;
             });
 
+            function resetPaymentIntegration() {
+                try {
+                    if (window.PaymentIntegration?.destroy) {
+                        window.PaymentIntegration.destroy();
+                    }
+                } catch (e) {
+                    console.warn('destroy error', e);
+                }
+
+                paymentContainer.innerHTML = '';
+                paymentIntegrationInitialized = false;
+            }
+
             async function startPayment() {
+                resetPaymentIntegration();
                 if (!window.PaymentIntegration) {
                     alert('Платёжный модуль ещё не загружен, попробуйте через секунду');
                     showScreen('review');
