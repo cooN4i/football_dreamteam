@@ -318,7 +318,7 @@
         </div>
     </div>
 
-    <script src="https://integrationjs.t-static.ru/integration.js" async></script>
+    <script src="https://integrationjs.t-static.ru/integration.js"></script>
 
     <script>
         (function() {
@@ -632,6 +632,10 @@
                     alert('Платёжный модуль ещё не загружен, попробуйте через секунду');
                     showScreen('review');
                     return;
+                }
+                if (paymentIntegrationInitialized) {
+                    await PaymentIntegration.destroy?.();
+                    paymentIntegrationInitialized = false;
                 }
                 const orderId = customerData.order_id;
                 const amount = 1000; // сумма в рублях (в бэкенде отправляется как есть)
