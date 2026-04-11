@@ -596,7 +596,7 @@
             // Кнопка "Оплатить" на экране review
             document.getElementById('payButton').addEventListener('click', async () => {
                 if (paymentInProgress) return;
-                customerData.order_id = Math.floor(Math.random() * 9900000);
+                customerData.order_id = Math.floor(Math.random() * 9900) + 100;
                 paymentInProgress = true;
                 showScreen('payment');
 

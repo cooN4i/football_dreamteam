@@ -206,7 +206,7 @@ def start(message):
     web_app = WebAppInfo(url="https://coon4i.github.io/football_dreamteam/")
     button = KeyboardButton(text="⚽ Открыть конструктор", web_app=web_app)
     markup.add(button)
-    bot.send_message(message.chat.id, "Нажмите кнопку ниже 👇",
+    bot.send_message(message.chat.id, "Нажмите кнопку ниже 👇\n\n⚠️ ВНИМАНИЕ! После загрузки мини-приложения необходимо отключить VPN для нормальной работы",
                      reply_markup=markup)
 
 # ---------------- HEALTH ----------------
